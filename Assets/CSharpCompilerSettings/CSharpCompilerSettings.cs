@@ -82,8 +82,50 @@ namespace Coffee.CSharpCompilierSettings
 
         private void OnValidate()
         {
-            if (!s_Instance) return;
-            File.WriteAllText(k_SettingsPath, JsonUtility.ToJson(s_Instance, true));
+            if (s_Instance != this) return;
+            Core.LogDebug("OnValidate => " + JsonUtility.ToJson(this));
+            File.WriteAllText(k_SettingsPath, JsonUtility.ToJson(this, true));
+
+            var current = s_Instance.m_LanguageVersion;
+            current = s_Instance.UseDefaultCompiler
+                ? 0
+                : current == LVersion.Preview
+                    ? LVersion.CSharp9
+                    : current == LVersion.Latest
+                        ? LVersion.CSharp8
+                        : current;
+
+            foreach (var group in (BuildTargetGroup[]) Enum.GetValues(typeof(BuildTargetGroup)))
+            {
+                if ((int) group <= 0 || typeof(BuildTargetGroup).GetMember(group.ToString())[0].GetCustomAttributes(typeof(ObsoleteAttribute), false).Length != 0) continue;
+
+                try
+                {
+                    var symbols = PlayerSettings.GetScriptingDefineSymbolsForGroup(group).Split(';', ',');
+                    var oldSymbols = symbols;
+                    LanguageVersionCheck(ref symbols, current, LVersion.CSharp7, "CSHARP_7_OR_LATER");
+                    LanguageVersionCheck(ref symbols, current, LVersion.CSharp7_1, "CSHARP_7_1_OR_LATER");
+                    LanguageVersionCheck(ref symbols, current, LVersion.CSharp7_2, "CSHARP_7_2_OR_LATER");
+                    LanguageVersionCheck(ref symbols, current, LVersion.CSharp7_3, "CSHARP_7_3_OR_LATER");
+                    LanguageVersionCheck(ref symbols, current, LVersion.CSharp8, "CSHARP_8_OR_LATER");
+                    LanguageVersionCheck(ref symbols, current, LVersion.CSharp9, "CSHARP_9_OR_LATER");
+                    var newSymbols = symbols;
+
+                    if (oldSymbols.SequenceEqual(newSymbols)) continue;
+
+                    PlayerSettings.SetScriptingDefineSymbolsForGroup(group, string.Join(";", newSymbols));
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static void LanguageVersionCheck(ref string[] symbols, LVersion current, LVersion version, string symbol)
+        {
+            symbols = version <= current
+                ? symbols.Union(new[] {symbol}).ToArray()
+                : symbols.Except(new[] {symbol}).ToArray();
         }
     }
 
@@ -122,6 +164,20 @@ namespace Coffee.CSharpCompilierSettings
             EditorGUILayout.PropertyField(spLanguageVersion);
 
             serializedObject.ApplyModifiedProperties();
+        }
+    }
+
+    internal class CSProjectModifier : AssetPostprocessor
+    {
+        private static string OnGeneratedCSProject(string path, string content)
+        {
+            var setting = CscSettings.instance;
+            if (setting.UseDefaultCompiler) return content;
+
+            // Language version.
+            content = Regex.Replace(content, "<LangVersion>.*</LangVersion>", "<LangVersion>" + setting.LanguageVersion + "</LangVersion>", RegexOptions.Multiline);
+
+            return content;
         }
     }
 }
