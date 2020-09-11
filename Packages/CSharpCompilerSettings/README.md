@@ -1,7 +1,7 @@
 C# Compiler Settings For Unity
 ===
 
-Change the C# compiler (csc) used in your Unity project, as you like!
+Change the C# compiler (csc) used on your Unity project, as you like!
 
 [![](https://img.shields.io/npm/v/com.coffee.csharp-compiler-settings?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.coffee.csharp-compiler-settings/)
 [![](https://img.shields.io/github/v/release/mob-sakai/CSharpCompilerSettingsForUnity?include_prereleases)](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/releases)
@@ -45,7 +45,7 @@ However, unfortunately, [there are no plans to backport to Unity 2020.1 or earli
 
 <br>
 
-This package changes the C# compiler (csc) used in your Unity project, to support C# 8.0.  
+This package changes the C# compiler (csc) used on your Unity project, to support C# 8.0.  
 Let's enjoy C# 8.0 features with your Unity project!
 
 ![](https://user-images.githubusercontent.com/12690315/92738843-44611800-f3b7-11ea-9412-be528547d0dd.png)
@@ -54,7 +54,7 @@ Let's enjoy C# 8.0 features with your Unity project!
 
 * Easy to use.
   * This package is out of the box!
-* Change the C# compiler (csc) used in your Unity project.
+* Change the C# compiler (csc) used on your Unity project.
   * Change the nuget package name.
     * **[Microsoft.Net.Compilers][]: Official compiler (default)**
     * [OpenSesame.Net.Compilers][]: Allows access to internals/privates in other assemblies.
@@ -84,9 +84,12 @@ Let's enjoy C# 8.0 features with your Unity project!
 
 ### Feature plans
 
-* Add a dropdown menu to select version
-* Verify the selected pakcage name and version
-* Show package description
+* Add a dropdown menu to select version.
+* Verify the selected pakcage name and version.
+* Show package description.
+* Configuring the C# compiler for each `*.asmodef` file.
+  * The concept is similar to [com.coffee.open-sesame-compiler](https://github.com/mob-sakai/OpenSesameCompilerForUnity).
+  * The two packages will be integrated in the future.
 
 ### NOTE: Please do so at your own risk!
 
@@ -102,7 +105,7 @@ https://forum.unity.com/threads/unity-c-8-support.663757/page-2#post-5738029
 #### Requirement
 
 * Unity 2018.3 or later
-* `.Net Framework 4.x`
+* `.Net 4.x` or `.Net Standard 2.0`
 
 #### via OpenUPM
 
