@@ -154,7 +154,7 @@ A project setting asset for C# Compiler will be saved in `ProjectSettings/CSharp
 }
 ```
 
-### For C# 8.0 features (preview)
+### For C# 8.0 features
 
 [C# 8.0 features](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-8)  
 [sample](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/tree/develop/Assets/C%23%208.0%20Features)
