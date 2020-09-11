@@ -1,8 +1,8 @@
 # Windows
 Thumbs.db
 Desktop.ini
-/*.csproj
-/*.sln
+*.csproj
+*.sln
 
 # macOS
 .DS_Store
@@ -11,9 +11,9 @@ Desktop.ini
 *.swp
 
 # Unity
-/Logs
-/Library
-/Temp
+Logs/
+Library/
+Temp/
 
 # VS
 .vs/
@@ -27,7 +27,10 @@ Packages/**/package/
 Packages/**/package.meta
 *.tgz
 *.tgz.meta
-/demo
 Assets/Plugins.meta
 Assets/Plugins/
 .idea/
+
+
+Test/Assets/Plugins.meta
+Test/Assets/Plugins/

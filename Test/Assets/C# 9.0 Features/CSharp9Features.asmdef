@@ -1,0 +1,15 @@
+{
+    "name": "CSharp9Features",
+    "references": [],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "CSHARP_9_OR_LATER",
+        "UNITY_2018_4_OR_NEWER"
+    ]
+}

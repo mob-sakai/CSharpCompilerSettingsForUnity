@@ -1,0 +1,21 @@
+{
+    "name": "CSharp8Features",
+    "references": [
+        "UniTask",
+        "UniTask.Linq"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "System.Memory.dll",
+        "IndexRange.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "CSHARP_8_OR_LATER",
+        "!NET_LEGACY"
+    ]
+}
