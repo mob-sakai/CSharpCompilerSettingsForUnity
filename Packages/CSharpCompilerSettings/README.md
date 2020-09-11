@@ -46,7 +46,7 @@ However, unfortunately, [there are no plans to backport to Unity 2020.1 or earli
 <br>
 
 This package changes the C# compiler (csc) used in your Unity project, to support C# 8.0.  
-Let's enjoy C# 8.0 features with Unity project!
+Let's enjoy C# 8.0 features with your Unity project!
 
 ![](https://user-images.githubusercontent.com/12690315/92738843-44611800-f3b7-11ea-9412-be528547d0dd.png)
 
@@ -78,7 +78,6 @@ Let's enjoy C# 8.0 features with Unity project!
 * Modify `langversion` property in *.csproj file
 * `dotnet` is not required.
 * `Use Default Compiler` option to disable this plugin.
-* Support `.Net 3.5` and `.Net 4.x`
 
 [OpenSesame.Net.Compilers]: https://www.nuget.org/packages/OpenSesame.Net.Compilers
 [Microsoft.Net.Compilers]: https://www.nuget.org/packages/Microsoft.Net.Compilers
@@ -103,6 +102,7 @@ https://forum.unity.com/threads/unity-c-8-support.663757/page-2#post-5738029
 #### Requirement
 
 * Unity 2018.3 or later
+* `.Net Framework 4.x`
 
 #### via OpenUPM
 
@@ -141,6 +141,55 @@ Or, use [UpmGitExtension](https://github.com/mob-sakai/UpmGitExtension) to insta
 The selected nuget package will be used for compilation.
 3. Enjoy!
 
+### Settings asset
+
+A project setting asset for C# Compiler will be saved in `ProjectSettings/CSharpCompilerSettings.asset`.
+
+```json
+{
+    "m_UseDefaultCompiler": false,
+    "m_PackageName": "Microsoft.Net.Compilers",
+    "m_PackageVersion": "3.5.0",
+    "m_LanguageVersion": 2147483647
+}
+```
+
+### For C# 8.0 features (preview)
+
+[C# 8.0 features](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-8)  
+[sample](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/tree/develop/Assets/C%23%208.0%20Features)
+
+If you want to use the C# 8.0 features, set it up as follows:
+
+* Package Name: **Microsoft.Net.Compilers**
+* Package Version: **3.5.0** or later
+* Language Version: **latest** or `CSharp_8`
+
+Some features required external library.
+
+* Async stream -> [UniTask v2](https://github.com/Cysharp/UniTask)
+  * Install to project.
+* Indices and ranges -> [IndexRange](https://www.nuget.org/packages/IndexRange/)
+  * Download nuget package and extract it.
+  * Import `lib/netstandard2.0/IndexRange.dll` to project.
+* Stackalloc in nested expressions -> [System.Memory](https://www.nuget.org/packages/System.Memory/)
+  * Download nuget package and extract it.
+  * Import `lib/netstandard2.0/System.Memory.dll` to project.
+
+**NOTE:** Default interface methods feature is not available. It requires `.Net Standard 2.1`.
+
+### For C# 9.0 features (preview)
+
+[C# 9.0 features](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-9)  
+[sample](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/tree/develop/Assets/C%23%209.0%20Features)
+
+If you want to use the C# 9.0 features, set it up as follows:
+
+* Package Name: **Microsoft.Net.Compilers**
+* Package Version: **3.8.0-2.final** or later
+* Language Version: **preview**
+
+**NOTE:** Some features is not available. It requires `.Net 5`.
 
 <br><br><br><br>
 
