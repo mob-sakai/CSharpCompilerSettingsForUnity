@@ -119,9 +119,28 @@ namespace Coffee.CSharpCompilierSettings
                     Core.LogInfo("Download {0} from nuget: {1}", packageId, url);
                     EditorUtility.DisplayProgressBar("C# Compiler Installer", string.Format("Download {0} from nuget", packageId), 0.2f);
 
-                    using (var client = new WebClient())
+                    try
                     {
-                        client.DownloadFile(url, downloadPath);
+                        using (var client = new WebClient())
+                        {
+                            client.DownloadFile(url, downloadPath);
+                        }
+                    }
+                    catch
+                    {
+                        Core.LogInfo("Download {0} from nuget (alternative): {1}", packageId, url);
+                        switch (Application.platform)
+                        {
+                            case RuntimePlatform.WindowsEditor:
+                                ExecuteCommand("PowerShell.exe", string.Format("curl -O {0} {1}", downloadPath, url));
+                                break;
+                            case RuntimePlatform.OSXEditor:
+                                ExecuteCommand("curl", string.Format("-o {0} -L {1}", downloadPath, url));
+                                break;
+                            case RuntimePlatform.LinuxEditor:
+                                ExecuteCommand("wget", string.Format("-O {0} {1}", downloadPath, url));
+                                break;
+                        }
                     }
                 }
 
@@ -229,10 +248,12 @@ namespace Coffee.CSharpCompilierSettings
             var tScriptCompilerBase = Type.GetType("UnityEditor.Scripting.Compilers.ScriptCompilerBase, UnityEditor");
             var fiProcess = tScriptCompilerBase.GetField("process", BindingFlags.NonPublic | BindingFlags.Instance);
             var psi = compiler.Get("process", fiProcess).Call("GetProcessStartInfo") as ProcessStartInfo;
-            var isDefaultCsc = (psi.FileName + " " + psi.Arguments).Replace('\\', '/')
-                .Split(' ')
-                .FirstOrDefault(x => x.EndsWith("/csc.exe") || x.EndsWith("/csc.dll") || x.EndsWith("/csc") || x.EndsWith("/unity_csc.sh") || x.EndsWith("/unity_csc.bat"))
-                .StartsWith(EditorApplication.applicationContentsPath.Replace('\\', '/'));
+            LogDebug("current process: {0}", (psi.FileName + " " + psi.Arguments));
+
+            var command = (psi.FileName + " " + psi.Arguments)
+                .Replace(EditorApplication.applicationContentsPath, "@APP_CONTENTS@")
+                .Replace('\\', '/');
+            var isDefaultCsc = Regex.IsMatch(command, "@APP_CONTENTS@/[^ ]*(mcs|csc)");
 
             // csc is not Unity default. It is already modified.
             if (!isDefaultCsc)
