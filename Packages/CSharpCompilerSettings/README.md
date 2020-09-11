@@ -17,19 +17,51 @@ Change the C# compiler (csc) used in your Unity project, as you like!
 
 ## Description
 
-Change the C# compiler (csc) used in your Unity project, as you like!
+A good news! [Unity 2020.2.0a12 or later now supports C# 8.0!](https://forum.unity.com/threads/unity-c-8-support.663757/page-3#post-5811175)
+
+Many developers (including you!) have been eagerly awaiting support for C# 8.0.  
+C# 8.0 includes [some features and some useful syntax-sugars](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-8):
+
+* Readonly members
+* Default interface methods
+* Pattern matching enhancements:
+  * Switch expressions
+  * Property patterns
+  * Tuple patterns
+  * Positional patterns
+* Using declarations
+* Static local functions
+* Disposable ref structs
+* Nullable reference types
+* Asynchronous streams
+* Asynchronous disposable
+* Indices and ranges
+* Null-coalescing assignment
+* Unmanaged constructed types
+* Stackalloc in nested expressions
+* Enhancement of interpolated verbatim strings
+
+However, unfortunately, [there are no plans to backport to Unity 2020.1 or earlier...](https://forum.unity.com/threads/unity-c-8-support.663757/page-5#post-6269856)
+
+<br>
+
+This package changes the C# compiler (csc) used in your Unity project, to support C# 8.0.  
+Let's enjoy C# 8.0 features with Unity project!
 
 ![](https://user-images.githubusercontent.com/12690315/92738843-44611800-f3b7-11ea-9412-be528547d0dd.png)
 
 ### Features
 
+* Easy to use.
+  * This package is out of the box!
 * Change the C# compiler (csc) used in your Unity project.
   * Change the nuget package name.
     * **[Microsoft.Net.Compilers][]: Official compiler (default)**
     * [OpenSesame.Net.Compilers][]: Allows access to internals/privates in other assemblies.
+    * Or, your custom nuget package
   * Change the nuget package version.
     * 3.4.0: C# 8.0 Supported.
-    * **3.5.0: C# 8.0 Supported. (default)**
+    * **3.5.0: C# 8.0 Supported. (default in Unity 2020.2.0)**
     * 3.6.0: C# 8.0 Supported.
     * 3.7.0: C# 8.0 Supported.
     * 3.8.0 (preview): C# 9.0 Supported.
@@ -39,15 +71,30 @@ Change the C# compiler (csc) used in your Unity project, as you like!
     * 7.1
     * 7.2
     * 7.3
-    * **8.0 (Latest, default)**
-    * 9.0 (Preview)
-* Easy to use.
-  * This package is out of the box.
+    * **8.0 (latest, default)**
+    * 9.0 (preview)
+* Add scripting symbols.
+  * e.g. `CSHARP_7_3_OR_LATER`, `CSHARP_8_OR_LATER`, `CSHARP_9_OR_LATER`
+* Modify `langversion` property in *.csproj file
 * `dotnet` is not required.
-* "Use Default Compiler" option.
+* `Use Default Compiler` option to disable this plugin.
+* Support `.Net 3.5` and `.Net 4.x`
 
 [OpenSesame.Net.Compilers]: https://www.nuget.org/packages/OpenSesame.Net.Compilers
 [Microsoft.Net.Compilers]: https://www.nuget.org/packages/Microsoft.Net.Compilers
+
+### Feature plans
+
+* Add a dropdown menu to select version
+* Verify the selected pakcage name and version
+* Show package description
+
+### NOTE: Please do so at your own risk!
+
+https://forum.unity.com/threads/unity-c-8-support.663757/page-2#post-5738029
+
+> Unity doesn't support using your own C# compiler.
+> While this is possible, it is not something I would recommend, as we've not tested customer C# compiler versions with Unity.
 
 <br><br><br><br>
 
