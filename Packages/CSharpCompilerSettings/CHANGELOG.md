@@ -1,3 +1,10 @@
+# [1.0.0-preview.2](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.0.0-preview.1...v1.0.0-preview.2) (2020-09-11)
+
+
+### Reverts
+
+* Revert "feat: support .Net 3.5" ([5f7cdec](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/5f7cdecfd743a89c09f36ea3946576d4d93d9d2d))
+
 # 1.0.0-preview.1 (2020-09-11)
 
 
