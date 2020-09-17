@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.0.0...v1.0.1) (2020-09-17)
+
+
+### Bug Fixes
+
+* Not working on Windows ([b0d4eba](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/b0d4ebacf6d940b14aecf6d79ef7fdb4ebddcaa3)), closes [#1](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/1)
+
 # 1.0.0 (2020-09-11)
 
 
