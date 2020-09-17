@@ -250,9 +250,8 @@ namespace Coffee.CSharpCompilierSettings
             var psi = compiler.Get("process", fiProcess).Call("GetProcessStartInfo") as ProcessStartInfo;
             LogDebug("current process: {0}", (psi.FileName + " " + psi.Arguments));
 
-            var command = (psi.FileName + " " + psi.Arguments)
-                .Replace(EditorApplication.applicationContentsPath, "@APP_CONTENTS@")
-                .Replace('\\', '/');
+            var command = (psi.FileName + " " + psi.Arguments).Replace('\\', '/')
+                .Replace(EditorApplication.applicationContentsPath.Replace('\\', '/'), "@APP_CONTENTS@");
             var isDefaultCsc = Regex.IsMatch(command, "@APP_CONTENTS@/[^ ]*(mcs|csc)");
 
             // csc is not Unity default. It is already modified.
