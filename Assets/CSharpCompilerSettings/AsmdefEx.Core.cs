@@ -144,8 +144,8 @@ namespace Coffee.CSharpCompilierSettings
             var currentDirectory = Directory.GetCurrentDirectory();
             var sep = Path.DirectorySeparatorChar;
             var url = GetDotnetDownloadUrl();
-            var downloadPath = Path.Combine(currentDirectory, "Temp", Path.GetFileName(Path.GetTempFileName()));
-            var installPath = Path.Combine(currentDirectory, "Library", "DotNetRuntime");
+            var downloadPath = Path.Combine("Temp", Path.GetFileName(Path.GetTempFileName()));
+            var installPath = Path.Combine("Library", "DotNetRuntime");
             var dotnetPath = Path.Combine(installPath, Application.platform == RuntimePlatform.WindowsEditor
                 ? "dotnet.exe"
                 : "dotnet");
@@ -200,20 +200,7 @@ namespace Coffee.CSharpCompilierSettings
                 {
                     Core.LogInfo("Extract {0} to {1} with 7z", downloadPath, installPath);
                     EditorUtility.DisplayProgressBar("Dotnet Installer", string.Format("Extract {0}", downloadPath), 0.4f);
-
-                    var appPath = EditorApplication.applicationContentsPath.Replace('/', sep);
-                    var args = string.Format("x {0} -o{1}", downloadPath, installPath);
-
-                    switch (Application.platform)
-                    {
-                        case RuntimePlatform.WindowsEditor:
-                            ShellHelper.ExecuteCommand(appPath + "\\Tools\\7z.exe", args);
-                            break;
-                        case RuntimePlatform.OSXEditor:
-                        case RuntimePlatform.LinuxEditor:
-                            ShellHelper.ExecuteCommand(appPath + "/Tools/7za", args);
-                            break;
-                    }
+                    ExtractArchive(downloadPath, installPath);
                 }
 
                 Core.LogInfo($"Dotnet has been installed at {installPath}.");
@@ -232,6 +219,26 @@ namespace Coffee.CSharpCompilierSettings
                 return dotnetPath;
 
             throw new FileNotFoundException(string.Format("Dotnet is not found at {0}", dotnetPath));
+        }
+
+        private static void ExtractArchive(string archivePath, string extractToPath)
+        {
+            var appPath = EditorApplication.applicationContentsPath.Replace('/', Path.DirectorySeparatorChar);
+            
+            switch (Application.platform)
+            {
+                case RuntimePlatform.WindowsEditor:
+                    var args = string.Format("x {0} -o{1}", archivePath, extractToPath);
+                    ShellHelper.ExecuteCommand(appPath + "\\Tools\\7z.exe", args);
+                    break;
+                case RuntimePlatform.OSXEditor:
+                case RuntimePlatform.LinuxEditor:
+                    // 7za doesn't preserve permission but tar does
+                    Directory.CreateDirectory(extractToPath);
+                    args = string.Format("-pzxf {0} -C {1}", archivePath, extractToPath);
+                    ShellHelper.ExecuteCommand("tar", args);
+                    break;
+            }
         }
     }
 
@@ -491,7 +498,7 @@ namespace Coffee.CSharpCompilierSettings
             }
             else
             {
-                psi.FileName = DotnetRuntime.GetInstalledPath(); ;
+                psi.FileName = Path.GetFullPath(DotnetRuntime.GetInstalledPath());
                 psi.Arguments = compilerInfo.Value.Path + " /noconfig @" + responseFile;
             }
 
