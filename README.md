@@ -48,7 +48,8 @@ However, unfortunately, [there are no plans to backport to Unity 2020.1 or earli
 This package changes the C# compiler (csc) used on your Unity project, to support C# 8.0.  
 Let's enjoy C# 8.0 features with your Unity project!
 
-![](https://user-images.githubusercontent.com/12690315/92738843-44611800-f3b7-11ea-9412-be528547d0dd.png)
+![](https://user-images.githubusercontent.com/12690315/95178488-7456dc00-07fa-11eb-8489-63d6af311ed0.png)
+![](https://user-images.githubusercontent.com/12690315/95178483-728d1880-07fa-11eb-89e6-c29d98e2ab02.png)
 
 ### Features
 
@@ -56,8 +57,12 @@ Let's enjoy C# 8.0 features with your Unity project!
   * This package is out of the box!
 * Change the C# compiler (csc) used on your Unity project.
   * Change the nuget package name.
-    * **[Microsoft.Net.Compilers][]: Official compiler (default)**
-    * [OpenSesame.Net.Compilers][]: Allows access to internals/privates in other assemblies.
+    * **[Microsoft.Net.Compilers][]: Official compiler (default, run on Unity built-in mono)**
+    * [Microsoft.Net.Compilers.Toolset][]: Official compiler (run on dotnet)
+      * Resolve the [issue #2](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/2)
+    * [OpenSesame.Net.Compilers][]: Allows access to internals/privates in other assemblies (run on Unity built-in mono)
+    * [OpenSesame.Net.Compilers.Toolset][]: Allows access to internals/privates in other assemblies (run on dotnet)
+      * Resolve the [issue #2](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/2)
     * Or, your custom nuget package
   * Change the nuget package version.
     * 3.4.0: C# 8.0 Supported.
@@ -71,25 +76,33 @@ Let's enjoy C# 8.0 features with your Unity project!
     * 7.1
     * 7.2
     * 7.3
-    * **8.0 (latest, default)**
+    * **8.0 (latest, default in Unity 2020.2.0)**
     * 9.0 (preview)
-* Add scripting symbols.
+* Add the scripting define symbols based on language version on compiling.
   * e.g. `CSHARP_7_3_OR_LATER`, `CSHARP_8_OR_LATER`, `CSHARP_9_OR_LATER`
-* Modify `langversion` property in *.csproj file
-* `dotnet` is not required.
-* `Use Default Compiler` option to disable this plugin.
+* Change the C# compiler settings for each `*.asmdef` file.
+  * Portability: The assembly works even in the projects that do not have this package installed.
+    * The best option when distributing as a package.
+  * Publish as Dll: Published dll works without this package.
+  * Modify the scripting define symbols for each `*.asmdef` file.
+    * Add/Remove specific symbols separated with semicolons (`';'`) or commas (`','`).
+    * The symbols starting with `'!'` will be removed.
+    * e.g. `SYMBOL_TO_ADD;!SYMBOL_TO_REMOVE;...`
+* Modify `langversion` property in *.csproj file.
+* If `dotnet` is required, install it automatically.
+* `CompilerType.BuiltIn` compiler option to disable this plugin.
+* `Enable Logging` option to display compilation log.
 
 [OpenSesame.Net.Compilers]: https://www.nuget.org/packages/OpenSesame.Net.Compilers
+[OpenSesame.Net.Compilers.Toolset]: https://www.nuget.org/packages/OpenSesame.Net.Compilers.Toolset
 [Microsoft.Net.Compilers]: https://www.nuget.org/packages/Microsoft.Net.Compilers
+[Microsoft.Net.Compilers.Toolset]: https://www.nuget.org/packages/Microsoft.Net.Compilers.Toolset
 
 ### Feature plans
 
 * Add a dropdown menu to select version.
 * Verify the selected pakcage name and version.
 * Show package description.
-* Configuring the C# compiler for each `*.asmodef` file.
-  * The concept is similar to [com.coffee.open-sesame-compiler](https://github.com/mob-sakai/OpenSesameCompilerForUnity).
-  * The two packages will be integrated in the future.
 
 ### NOTE: Please do so at your own risk!
 
@@ -102,12 +115,11 @@ https://forum.unity.com/threads/unity-c-8-support.663757/page-2#post-5738029
 
 ## Installation
 
-#### Requirement
+### Requirement
 
 * Unity 2018.3 or later
-* `.Net 4.x` or `.Net Standard 2.0`
 
-#### via OpenUPM
+### via OpenUPM
 
 This package is available on [OpenUPM](https://openupm.com).  
 After installing [openupm-cli](https://github.com/openupm/openupm-cli), run the following command
@@ -115,7 +127,7 @@ After installing [openupm-cli](https://github.com/openupm/openupm-cli), run the 
 openupm add com.coffee.csharp-compiler-settings
 ```
 
-#### via Package Manager
+### via Package Manager
 
 Find the `manifest.json` file in the `Packages` directory in your project and edit it to look like this:
 ```
@@ -136,31 +148,56 @@ Or, use [UpmGitExtension](https://github.com/mob-sakai/UpmGitExtension) to insta
 
 ## Usage
 
+### Configure C# compiler settings for the project
+
 1. Open project setting window. (`Edit > Project Settings`)  
 ![](https://user-images.githubusercontent.com/12690315/92742741-e3d3da00-f3ba-11ea-8314-4cabd88c1b2c.png)
-1. Select `C# Compiler` tab and turn off `Use Default Compiler` option.  
-![](https://user-images.githubusercontent.com/12690315/92738843-44611800-f3b7-11ea-9412-be528547d0dd.png)
-1. It will automatically request a recompilation.  
+2. Select `C# Compiler` tab
+3. Set `Compiler Type` to `Custom Package`, to use custom compiler package.  
+![](https://user-images.githubusercontent.com/12690315/95178488-7456dc00-07fa-11eb-8489-63d6af311ed0.png)
+3. Input `Package Name`, `Package Version`, `Language Version` for compilation.
+   * See [features](#features) section.
+4. Press `Apply` button to save settings.
+5. It will automatically request a recompilation.  
 The selected nuget package will be used for compilation.
-3. Enjoy!
+6. Enjoy!
 
-### Settings asset
-
-A project setting asset for C# Compiler will be saved in `ProjectSettings/CSharpCompilerSettings.asset`.
+The project setting asset for C# Compiler will be saved in `ProjectSettings/CSharpCompilerSettings.asset`.
 
 ```json
 {
     "m_UseDefaultCompiler": false,
-    "m_PackageName": "Microsoft.Net.Compilers",
-    "m_PackageVersion": "3.5.0",
-    "m_LanguageVersion": 2147483647
+    "m_Version": 110,
+    "m_CompilerType": 1,
+    "m_PackageName": "Microsoft.Net.Compilers.Toolset",
+    "m_PackageVersion": "3.8.0-3.final",
+    "m_LanguageVersion": 2147483646,
+    "m_EnableLogging": true,
+    "m_ModifySymbols": ""
 }
 ```
+
+<br><br>
+
+### Configure C# compiler settings for `*.asmodef` file
+
+1. Select a `*.asmodef` file
+2. Turn on `Enable C# Compilier Settings` to configure.  
+![](https://user-images.githubusercontent.com/12690315/95178483-728d1880-07fa-11eb-89e6-c29d98e2ab02.png)
+3. Set `Compiler Type` to `Custom Package`, to use custom compiler package.
+4. Input `Package Name`, `Package Version`, `Language Version` and `Modify Symbols` for compilation.
+   * See [features](#features) section.
+5. Press `Apply` button to save settings.
+
+**Reload:** Reload C# compiler settings dll for the assembly.  
+**Publish as dll:** Publish the assembly as dll to the parent directory.
+
+<br><br>
 
 ### For C# 8.0 features
 
 [C# 8.0 features](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-8)  
-[sample](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/tree/develop/Assets/C%23%208.0%20Features)
+[samples](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/tree/develop/Assets/C%23%208.0%20Features)
 
 If you want to use the C# 8.0 features, set it up as follows:
 
@@ -181,10 +218,12 @@ Some features required external library.
 
 **NOTE:** Default interface methods feature is not available. It requires `.Net Standard 2.1`.
 
+<br><br>
+
 ### For C# 9.0 features (preview)
 
 [C# 9.0 features](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-9)  
-[sample](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/tree/develop/Assets/C%23%209.0%20Features)
+[samples](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/tree/develop/Assets/C%23%209.0%20Features)
 
 If you want to use the C# 9.0 features, set it up as follows:
 
@@ -209,7 +248,7 @@ Issues are very valuable to this project.
 ### Pull Requests
 
 Pull requests are, a great way to get your ideas into this repository.  
-See [CONTRIBUTING.md](/../../blob/develop/CONTRIBUTING.md).
+See [CONTRIBUTING.md](/../../blob/develop/CONTRIBUTING.md) and [develop](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/tree/develop) branch.
 
 ### Support
 

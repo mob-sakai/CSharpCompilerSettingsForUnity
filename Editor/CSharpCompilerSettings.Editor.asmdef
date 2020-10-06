@@ -1,0 +1,16 @@
+{
+    "name": "CSharpCompilerSettings.Editor",
+    "references": [],
+    "optionalUnityReferences": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "CSharpCompilerSettings.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": []
+}
