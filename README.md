@@ -276,3 +276,9 @@ With your support, I can spend more time on development. :)
 * Releases : https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/releases
 * Issue tracker : https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues
 * Change log : https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/blob/upm/CHANGELOG.md
+
+
+## Special Thanks
+
+* Special thanks to [@pCYSl5EDgo](https://github.com/pCYSl5EDgo), your ideas contributed to improve this package.
+  * Test-RewriteAssemblyName: https://github.com/pCYSl5EDgo/Test-RewriteAssemblyName
