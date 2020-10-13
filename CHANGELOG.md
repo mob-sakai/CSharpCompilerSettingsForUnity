@@ -1,29 +1,12 @@
-## [1.1.1-preview.3](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.1.1-preview.2...v1.1.1-preview.3) (2020-10-13)
-
-
-### Bug Fixes
-
-* log for compile command is incorrect ([b551b82](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/b551b82743e0b759a07f218c6d28ef9917dc2ed9))
-
-
-### Reverts
-
-* Revert "change: assemblyNameChanger uses Unity.Cecil instead of Mono.Cecil" ([727966f](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/727966f58178c23d6c9c558241d1a389701d9be1))
-
-## [1.1.1-preview.2](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.1.1-preview.1...v1.1.1-preview.2) (2020-10-13)
-
-
-### Bug Fixes
-
-* the setting is incorrect for asmdef ([6b16210](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/6b1621042b55cbe6a82138b29b029b1647cc79f7))
-
-## [1.1.1-preview.1](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.1.0...v1.1.1-preview.1) (2020-10-13)
+## [1.1.1](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.1.0...v1.1.1) (2020-10-13)
 
 
 ### Bug Fixes
 
 * change language version for 8 & 9 to 8.0 & 9.0 ([2ca4892](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/2ca48927cfcbacd4ac26e38148893334fc008171))
 * change the external exe path ([0bc2b46](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/0bc2b46777fd758a569aa2c339c77a87fff5c955))
+* log for compile command is incorrect ([b551b82](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/b551b82743e0b759a07f218c6d28ef9917dc2ed9))
+* the setting is incorrect for asmdef ([6b16210](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/6b1621042b55cbe6a82138b29b029b1647cc79f7))
 
 # [1.1.0](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.0.1...v1.1.0) (2020-10-06)
 
@@ -67,20 +50,3 @@
 * add scripting symbols for C# language ([a6dca8e](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/a6dca8efdfc45debc8878349619f85b18179cd22))
 * change the C# compiler (csc) used in project ([8f10c0d](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/8f10c0d2735a3bcd7fbfb1e72fe8c55caee37e91))
 * project settings for the C# compiler package name, version and C# language version ([c7aec4d](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/c7aec4d6d40c2a85bb53a643509487a6e10e0503))
-
-# [1.0.0-preview.2](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.0.0-preview.1...v1.0.0-preview.2) (2020-09-11)
-
-
-### Reverts
-
-* Revert "feat: support .Net 3.5" ([5f7cdec](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/5f7cdecfd743a89c09f36ea3946576d4d93d9d2d))
-
-# 1.0.0-preview.1 (2020-09-11)
-
-
-### Features
-
-* add scripting symbols for C# language ([a6dca8e](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/a6dca8efdfc45debc8878349619f85b18179cd22))
-* change the C# compiler (csc) used in project ([8f10c0d](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/8f10c0d2735a3bcd7fbfb1e72fe8c55caee37e91))
-* project settings for the C# compiler package name, version and C# language version ([c7aec4d](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/c7aec4d6d40c2a85bb53a643509487a6e10e0503))
-* support .Net 3.5 ([d2c423e](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/d2c423e4a04706dd0801291202bb98c27b85bec2))
