@@ -10,9 +10,6 @@ namespace Coffee.CSharpCompilerSettings
         public static void Rename(string dll, string assemblyName)
         {
             var exe = Path.GetFullPath("Packages/com.coffee.csharp-compiler-settings/ChangeAssemblyName~/ChangeAssemblyName.exe");
-            var cecilDll = Path.GetFullPath("Packages/com.coffee.csharp-compiler-settings/ChangeAssemblyName~/Unity.Cecil.dll");
-            var contentsPath = EditorApplication.applicationContentsPath;
-            var sep = Path.DirectorySeparatorChar;
 
             // Create compilation process.
             var psi = new ProcessStartInfo
@@ -23,11 +20,6 @@ namespace Coffee.CSharpCompilerSettings
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
             };
-
-            if (!File.Exists(cecilDll))
-            {
-                File.Copy((contentsPath + "/Managed/Unity.Cecil.dll").Replace('/', sep), cecilDll.Replace('/', sep));
-            }
 
             if (Application.platform == RuntimePlatform.WindowsEditor)
             {

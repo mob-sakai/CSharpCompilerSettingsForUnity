@@ -1,3 +1,15 @@
+## [1.1.1-preview.3](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.1.1-preview.2...v1.1.1-preview.3) (2020-10-13)
+
+
+### Bug Fixes
+
+* log for compile command is incorrect ([b551b82](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/b551b82743e0b759a07f218c6d28ef9917dc2ed9))
+
+
+### Reverts
+
+* Revert "change: assemblyNameChanger uses Unity.Cecil instead of Mono.Cecil" ([727966f](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/727966f58178c23d6c9c558241d1a389701d9be1))
+
 ## [1.1.1-preview.2](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.1.1-preview.1...v1.1.1-preview.2) (2020-10-13)
 
 
