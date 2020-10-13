@@ -1,3 +1,11 @@
+## [1.1.1-preview.1](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.1.0...v1.1.1-preview.1) (2020-10-13)
+
+
+### Bug Fixes
+
+* change language version for 8 & 9 to 8.0 & 9.0 ([2ca4892](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/2ca48927cfcbacd4ac26e38148893334fc008171))
+* change the external exe path ([0bc2b46](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/0bc2b46777fd758a569aa2c339c77a87fff5c955))
+
 # [1.1.0](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.0.1...v1.1.0) (2020-10-06)
 
 

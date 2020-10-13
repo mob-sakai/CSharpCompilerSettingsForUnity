@@ -9,8 +9,8 @@ namespace Coffee.CSharpCompilerSettings
     {
         public static void Rename(string dll, string assemblyName)
         {
-            const string exe = "Packages/CSharpCompilerSettings/.exe/ChangeAssemblyName.exe";
-            const string cecilDll = "Packages/CSharpCompilerSettings/.exe/Unity.Cecil.dll";
+            var exe = Path.GetFullPath("Packages/com.coffee.csharp-compiler-settings/ChangeAssemblyName~/ChangeAssemblyName.exe");
+            var cecilDll = Path.GetFullPath("Packages/com.coffee.csharp-compiler-settings/ChangeAssemblyName~/Unity.Cecil.dll");
             var contentsPath = EditorApplication.applicationContentsPath;
             var sep = Path.DirectorySeparatorChar;
 
@@ -31,7 +31,7 @@ namespace Coffee.CSharpCompilerSettings
 
             if (Application.platform == RuntimePlatform.WindowsEditor)
             {
-                psi.FileName = Path.GetFullPath(exe);
+                psi.FileName = exe;
             }
             else
             {
