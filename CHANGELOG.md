@@ -1,3 +1,10 @@
+## [1.1.1-preview.2](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.1.1-preview.1...v1.1.1-preview.2) (2020-10-13)
+
+
+### Bug Fixes
+
+* the setting is incorrect for asmdef ([6b16210](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/6b1621042b55cbe6a82138b29b029b1647cc79f7))
+
 ## [1.1.1-preview.1](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.1.0...v1.1.1-preview.1) (2020-10-13)
 
 
