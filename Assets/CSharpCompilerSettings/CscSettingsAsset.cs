@@ -17,6 +17,7 @@ namespace Coffee.CSharpCompilerSettings
         [SerializeField] private string m_PackageVersion = "3.5.0";
         [SerializeField] private CSharpLanguageVersion m_LanguageVersion = CSharpLanguageVersion.Latest;
         [SerializeField] private bool m_EnableLogging = false;
+        [SerializeField] private bool m_EnableNullable = false;
 
         [Tooltip(
             "When compiling this assembly, add or remove specific symbols separated with semicolons (;) or commas (,).\nSymbols starting with '!' will be removed.\n\ne.g. 'SYMBOL_TO_ADD;!SYMBOL_TO_REMOVE;...'")]
@@ -39,6 +40,7 @@ namespace Coffee.CSharpCompilerSettings
 
         public bool UseDefaultCompiler => m_CompilerType == CompilerType.BuiltIn;
         public bool ShouldToRecompile => m_CompilerType == CompilerType.CustomPackage || !string.IsNullOrEmpty(m_ModifySymbols);
+        public bool EnableNullable => m_EnableNullable;
 
         public string LanguageVersion
         {

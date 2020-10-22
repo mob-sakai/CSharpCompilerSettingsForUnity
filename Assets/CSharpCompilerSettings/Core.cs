@@ -146,6 +146,9 @@ namespace Coffee.CSharpCompilerSettings
             text = Regex.Replace(text, "\n/debug\n", "\n/debug:portable\n");
             text += "\n/preferreduilang:en-US";
 
+            // Enable nullable.
+            if (setting.EnableNullable)
+                text += "\n/nullable:enable";
 
             // Modify scripting define symbols.
             var defines = Regex.Matches(text, "^/define:(.*)$", RegexOptions.Multiline)
