@@ -1,6 +1,5 @@
 # Secrets
 #   ULF_REPO: Git repository url contains ulf files. https://mob-sakai:{{token}}@github.com/mob-sakai/ulfs.git
-#   WORKING_DIR: Unity project path (default: '.')
 name: unity-test
 
 on:
@@ -21,10 +20,14 @@ jobs:
       - uses: actions/checkout@v2
 
       - run: |
-          npm i https://gist.github.com/mob-sakai/c90044338361af97a7e8c8a78425bdb3
+          npm i --no-save https://gist.github.com/mob-sakai/c90044338361af97a7e8c8a78425bdb3
           npx semantic-release -e @mob-sakai/semantic-release-upm --dry-run --debug --branches develop
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      
+      - run: cat package.json
+      
+      - run: ls
 
   unity-test:
     strategy:
@@ -113,13 +116,19 @@ jobs:
         working-directory: Packages/dev
         run: git checkout ${{ github.head_ref }}
 
-      # Build editor tests
+      # Run playmode tests
       - name: "Build editor tests"
         if: always() && steps.activation.conclusion == 'success'
         run: |
           xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
-          /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath . -runEditorTests \
-            || [ -e ./editor_unittest.xml ] && exit 0 || exit 1
+            /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath . -runTests -testPlatform playmode || exit 0
+
+      # Run editmode tests
+      - name: "Build editor tests"
+        if: always() && steps.activation.conclusion == 'success'
+        run: |
+          xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
+            /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath . -runTests -testPlatform editmode || exit 0
 
       # Push test results
       - name: Push test results

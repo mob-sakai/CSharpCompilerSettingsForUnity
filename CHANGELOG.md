@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/1.1.1...1.2.0) (2020-10-22)
+
+
+### Features
+
+* add nullable option ([9bc0b85](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/9bc0b858e27dfb6da561404336389064a35c2cf8)), closes [#5](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/5)
+
 ## [1.1.1](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/v1.1.0...v1.1.1) (2020-10-13)
 
 

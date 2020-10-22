@@ -17,7 +17,11 @@ jobs:
       - uses: actions/checkout@v2
 
       - run: |
-          npm i https://gist.github.com/mob-sakai/c90044338361af97a7e8c8a78425bdb3
+          npm i --no-save https://gist.github.com/mob-sakai/c90044338361af97a7e8c8a78425bdb3
           npx semantic-release -e @mob-sakai/semantic-release-upm
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      
+      - run: cat package.json
+      
+      - run: ls
