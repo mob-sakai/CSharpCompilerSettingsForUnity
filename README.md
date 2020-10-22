@@ -7,7 +7,7 @@
 
 ## How to develop this package
 
-1. Fork the repository and create your branch from `develop`.
+1. Fork the repository and create your branch from `sandbox`.
 2. Open the project and enable `Csc Settings > Develop Mode`  
 ![](https://user-images.githubusercontent.com/12690315/95061815-10b7aa80-0737-11eb-9e3f-1b33c4f0ddbc.png)
 3. Develop the package
