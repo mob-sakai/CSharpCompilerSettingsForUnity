@@ -44,6 +44,7 @@ namespace Coffee.CSharpCompilerSettings
             // Update rsp file.
             var rsp = File.ReadAllText(k_ResponseFileSrc);
             rsp = rsp.Replace("${APP_CONTENTS}", appContents);
+            rsp = rsp.Replace("${DLL_PATH}", Path.GetFullPath(AssetDatabase.GUIDToAssetPath("461bbb389771b4c5f98a24881230d53c")));
             File.WriteAllText(k_ResponseFileDst, rsp);
 
             // Detect csc tool exe.

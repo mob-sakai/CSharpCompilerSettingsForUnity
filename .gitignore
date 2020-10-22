@@ -37,3 +37,4 @@ Test/Assets/Plugins/
 
 !ChangeAssemblyName/*.csproj
 !ChangeAssemblyName/*.sln
+Packages/dev.meta

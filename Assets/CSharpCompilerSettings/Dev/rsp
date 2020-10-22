@@ -1,7 +1,7 @@
 /target:library
 /nowarn:0169
 /langversion:latest
-/out:"Packages/CSharpCompilerSettings/Plugins/CSharpCompilerSettings.dll"
+/out:"${DLL_PATH}"
 /nostdlib
 /deterministic
 /optimize+
