@@ -1,0 +1,116 @@
+# Secrets
+#   ULF_REPO: Git repository url contains ulf files. https://mob-sakai:{{token}}@github.com/mob-sakai/ulfs.git
+#   WORKING_DIR: Unity project path (default: '.')
+name: unity-test
+
+on:
+  push:
+    branches:
+      - develop
+    tags:
+      - "!*"
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  build-unity:
+    strategy:
+      fail-fast: false
+      matrix:
+        unity:
+          [
+            "2018.4.25f1",
+            "2019.4.10f1",
+            "2020.1.0f1",
+            "2020.1.1f1",
+            "2020.1.2f1",
+            "2020.1.3f1",
+            "2020.1.4f1",
+            "2020.1.5f1",
+          ]
+
+    runs-on: ubuntu-latest
+    container:
+      # Use Unity image from https://hub.docker.com/r/gableroux/unity3d/tags
+      image: gableroux/unity3d:${{ matrix.unity }}
+
+    steps:
+      # Activate Unity Editor
+      - name: Activate Unity Editor
+        id: activation
+        run: |
+          # Clone ulfs.
+          apt-get update
+          apt-get install software-properties-common -y
+          apt-add-repository ppa:git-core/ppa -y
+          apt-get update
+          apt-get install git -y
+          git clone --depth 1 ${ULF_REPO} .ulfs
+
+          # Activate with ulf.
+          ULF_FILE=.ulfs/Unity_v${UNITY_VERSION}.ulf
+          echo $ULF_FILE
+          if [ -e ${ULF_FILE} ]; then
+            /opt/Unity/Editor/Unity -quit -batchmode -nographics -silent-crashes -logFile -manualLicenseFile ${ULF_FILE} \
+              | grep -E 'LICENSE SYSTEM.*\w{32} != \w{32}' && FAILED=true
+          else
+            echo "::error:: ulf file '${ULF_FILE}' is not found."
+            FAILED=true
+          fi
+
+          # Activation failed.
+          if [ $FAILED ]; then
+            echo "::error:: the unity activation may have failed. manual activation is required.%0A \
+              1. download the artifact's .alf file.%0A \
+              2. Go to https://license.unity3d.com/manual to activate manually.%0A \
+              3. Generate a .ulf file from the .alf file and download it.%0A \
+              4. Rename .ulf to 'Unity_v${UNITY_VERSION}.ulf'.%0A \
+              5. Add file to ulfs repository.%0A \
+              5. Re-run the jobs."
+
+            /opt/Unity/Editor/Unity -quit -batchmode -nographics -logFile -createManualActivationFile
+            exit 1
+          fi
+        env:
+          ULF_REPO: ${{ secrets.ULF_REPO }}
+          UNITY_VERSION: ${{ matrix.unity }}
+
+      # (On failed activation) Upload unity activation file
+      - name: Upload unity activation file
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: Unity_v${{ matrix.unity }}.alf
+          path: ./*.alf
+
+      # Setup testspace
+      - uses: testspace-com/setup-testspace@v1
+        with:
+          domain: ${{ github.repository_owner }}
+
+      # Checkout sandbox project
+      - uses: actions/checkout@v2
+        with:
+          ref: "sandbox"
+          submodules: "true"
+          fetch-depth: "1"
+
+      # Update package submodule
+      - name: "Update package submodule"
+        working-directory: Packages/dev
+        run: git checkout ${{ github.head_ref }}
+
+      # Build editor tests
+      - name: "Build editor tests"
+        if: always() && steps.activation.conclusion == 'success'
+        run: |
+          xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
+          /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath . -runEditorTests \
+            || [ -e ./editor_unittest.xml ] && exit 0 || exit 1
+
+      # Push test results
+      - name: Push test results
+        if: always() && steps.activation.conclusion == 'success'
+        run: testspace "[${{ matrix.unity }}]TestResults-*.xml"
