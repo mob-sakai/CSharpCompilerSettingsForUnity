@@ -15,7 +15,18 @@ on:
       - synchronize
 
 jobs:
-  build-unity:
+  release-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - run: |
+          npm i https://gist.github.com/mob-sakai/c90044338361af97a7e8c8a78425bdb3
+          npx semantic-release -e @mob-sakai/semantic-release-upm --dry-run --debug --branches develop
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  unity-test:
     strategy:
       fail-fast: false
       matrix:
