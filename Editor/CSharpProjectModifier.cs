@@ -28,6 +28,10 @@ namespace Coffee.CSharpCompilerSettings
             if (!setting.UseDefaultCompiler)
                 content = Regex.Replace(content, "<LangVersion>.*</LangVersion>", "<LangVersion>" + setting.LanguageVersion + "</LangVersion>", RegexOptions.Multiline);
 
+            // Enable nullable.
+            if (setting.EnableNullable)
+                content = Regex.Replace(content, "(\\s+)(<LangVersion>.*</LangVersion>)([\r\n]+)", "$1$2$3$1<Nullable>enable</Nullable>$3");
+
             return content;
         }
     }
