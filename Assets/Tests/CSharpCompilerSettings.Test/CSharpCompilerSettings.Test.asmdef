@@ -1,0 +1,23 @@
+{
+    "name": "CSharpCompilerSettings.Test",
+    "references": [
+        "CSharpCompilerSettings.Editor",
+        "CSharpCompilerSettings.Dev"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "CSharpCompilerSettings.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "!CSC_SETTINGS_DEVELOP"
+    ]
+}
