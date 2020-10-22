@@ -1,0 +1,4 @@
+[submodule "Packages/dev"]
+	path = Packages/dev
+	url = ./
+	branch = upm

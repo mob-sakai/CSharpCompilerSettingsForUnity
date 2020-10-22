@@ -1,0 +1,23 @@
+{
+    "name": "CSharp8Features.Tests",
+    "references": [],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "System.Memory.dll",
+        "IndexRange.dll",
+        "Microsoft.Bcl.AsyncInterfaces.dll",
+        "System.Threading.Tasks.Extensions.dll",
+        "System.Runtime.CompilerServices.Unsafe.dll",
+        "System.Buffers.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

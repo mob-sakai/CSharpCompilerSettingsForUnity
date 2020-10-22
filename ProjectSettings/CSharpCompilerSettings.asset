@@ -1,0 +1,10 @@
+{
+    "m_UseDefaultCompiler": false,
+    "m_Version": 110,
+    "m_CompilerType": 1,
+    "m_PackageName": "Microsoft.Net.Compilers.Toolset",
+    "m_PackageVersion": "3.8.0-3.final",
+    "m_LanguageVersion": 2147483646,
+    "m_EnableLogging": true,
+    "m_ModifySymbols": ""
+}
