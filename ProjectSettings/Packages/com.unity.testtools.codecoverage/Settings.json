@@ -1,0 +1,13 @@
+{
+    "m_Name": "Settings",
+    "m_Path": "ProjectSettings/Packages/com.unity.testtools.codecoverage/Settings.json",
+    "m_Dictionary": {
+        "m_DictionaryValues": [
+            {
+                "type": "System.String, mscorlib",
+                "key": "IncludeAssemblies",
+                "value": "{\"m_Value\":\"CSharpCompilerSettings\"}"
+            }
+        ]
+    }
+}
