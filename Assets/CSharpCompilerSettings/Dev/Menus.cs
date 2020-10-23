@@ -16,6 +16,16 @@ namespace Coffee.CSharpCompilerSettings
         private const string k_TestAsmdef = "Assets/Tests/CSharpCompilerSettings.Test/CSharpCompilerSettings.Test.asmdef~";
         private const string k_TestAsmdefDevelop = "Assets/Tests/CSharpCompilerSettings.Test/CSharpCompilerSettings.Test.asmdef.dev~";
 
+        private static void SetDevelopMode()
+        {
+            if (!HasSymbol(k_DevelopModeSymbol))
+                SwitchSymbol(k_DevelopModeSymbol);
+
+            File.Copy(k_EditorAsmdefDevelop, k_EditorAsmdefPath, true);
+            File.Copy(k_TestAsmdefDevelop, k_TestAsmdefPath, true);
+
+            EditorApplication.Exit(0);
+        }
 
         [MenuItem(k_DevelopModeText, false)]
         private static void DevelopMode()
