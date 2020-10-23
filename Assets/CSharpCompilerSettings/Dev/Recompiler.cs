@@ -36,7 +36,7 @@ namespace Coffee.CSharpCompilerSettings
         }
 #endif
 
-        [MenuItem("Csc Settings/Revompile")]
+        [MenuItem("Csc Settings/Recompile")]
         private static void Recompile()
         {
             var appContents = EditorApplication.applicationContentsPath;
