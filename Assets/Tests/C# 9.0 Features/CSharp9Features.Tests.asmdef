@@ -10,5 +10,7 @@
     "overrideReferences": true,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [
+        "CSHARP_9_OR_NEWER"
+    ]
 }

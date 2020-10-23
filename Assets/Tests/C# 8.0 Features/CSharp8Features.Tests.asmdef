@@ -17,5 +17,7 @@
         "System.Buffers.dll"
     ],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [
+        "CSHARP_8_OR_NEWER"
+    ]
 }
