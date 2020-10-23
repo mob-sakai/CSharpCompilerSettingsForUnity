@@ -117,20 +117,29 @@ jobs:
         run: git checkout ${{ github.head_ref }}
 
       # Run playmode tests
-      - name: "Build editor tests"
+      - name: "Run playmode tests"
         if: always() && steps.activation.conclusion == 'success'
         run: |
           xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
             /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath . -runTests -testPlatform playmode || exit 0
 
       # Run editmode tests
-      - name: "Build editor tests"
+      - name: "Run editmode tests"
         if: always() && steps.activation.conclusion == 'success'
         run: |
+          # Install codecoverage
+          if [ -z "`echo ${{ matrix.unity }} | grep 2018.`" ]; then
+            npm i -g openupm-cli
+            openupm add com.unity.testtools.codecoverage
+
+            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
+              /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath . -executeMethod Coffee.CSharpCompilerSettings.Menus.SetDevelopMode
+          fi
+
           xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
-            /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath . -runTests -testPlatform editmode || exit 0
+            /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath . -runEditorTests -enableCodeCoverage -coverageOptions 'assemblyFilters:+CSharpCompilerSettings' || exit 0
 
       # Push test results
       - name: Push test results
         if: always() && steps.activation.conclusion == 'success'
-        run: testspace "[${{ matrix.unity }}]TestResults-*.xml"
+        run: testspace "[${{ matrix.unity }}]TestResults-*.xml" "[Code Coverage]CodeCoverage/**/TestCoverageResults_*.xml"
