@@ -11,7 +11,10 @@ namespace Coffee.CSharpCompilerSettings
 
         private const string k_EditorAsmdefPath = "Packages/com.coffee.csharp-compiler-settings/Editor/CSharpCompilerSettings.Editor.asmdef";
         private const string k_EditorAsmdef = "Assets/CSharpCompilerSettings/Dev/CSharpCompilerSettings.Editor.asmdef~";
-        private const string k_EditorAsmdefDevelop = "Assets/CSharpCompilerSettings/Dev/CSharpCompilerSettings.Editor.asmdef.Dev~";
+        private const string k_EditorAsmdefDevelop = "Assets/CSharpCompilerSettings/Dev/CSharpCompilerSettings.Editor.asmdef.dev~";
+        private const string k_TestAsmdefPath = "Assets/Tests/CSharpCompilerSettings.Test/CSharpCompilerSettings.Test.asmdef";
+        private const string k_TestAsmdef = "Assets/Tests/CSharpCompilerSettings.Test/CSharpCompilerSettings.Test.asmdef~";
+        private const string k_TestAsmdefDevelop = "Assets/Tests/CSharpCompilerSettings.Test/CSharpCompilerSettings.Test.asmdef.dev~";
 
 
         [MenuItem(k_DevelopModeText, false)]
@@ -21,10 +24,12 @@ namespace Coffee.CSharpCompilerSettings
             if (HasSymbol(k_DevelopModeSymbol))
             {
                 File.Copy(k_EditorAsmdefDevelop, k_EditorAsmdefPath, true);
+                File.Copy(k_TestAsmdefDevelop, k_TestAsmdefPath, true);
             }
             else
             {
                 File.Copy(k_EditorAsmdef, k_EditorAsmdefPath, true);
+                File.Copy(k_TestAsmdef, k_TestAsmdefPath, true);
             }
 
             AssetDatabase.ImportAsset(k_EditorAsmdefPath);

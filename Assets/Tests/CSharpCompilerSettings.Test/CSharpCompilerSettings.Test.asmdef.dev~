@@ -1,6 +1,7 @@
 {
     "name": "CSharpCompilerSettings.Test",
     "references": [
+        "CSharpCompilerSettings",
         "CSharpCompilerSettings.Editor",
         "CSharpCompilerSettings.Dev"
     ],
@@ -13,9 +14,7 @@
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
-    "precompiledReferences": [
-        "CSharpCompilerSettings.dll"
-    ],
+    "precompiledReferences": [],
     "autoReferenced": false,
     "defineConstraints": []
 }
