@@ -44,6 +44,8 @@ jobs:
             "2020.1.4f1",
             "2020.1.5f1",
           ]
+    env:
+      RUN_UNITY: "xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath ."
 
     runs-on: ubuntu-latest
     container:
@@ -120,24 +122,20 @@ jobs:
       - name: "Run playmode tests"
         if: always() && steps.activation.conclusion == 'success'
         run: |
-          xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
-            /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath . -runTests -testPlatform playmode || exit 0
+          # Install codecoverage
+          if [ -z "`echo ${{ matrix.unity }} | grep 2018.`" ]; then
+            npm i -g openupm-cli
+            openupm add com.unity.testtools.codecoverage
+          fi
+
+          $RUN_UNITY -runTests -testPlatform playmode -enableCodeCoverage || exit 0
 
       # Run editmode tests
       - name: "Run editmode tests"
         if: always() && steps.activation.conclusion == 'success'
         run: |
-          # Install codecoverage
-          if [ -z "`echo ${{ matrix.unity }} | grep 2018.`" ]; then
-            npm i -g openupm-cli
-            openupm add com.unity.testtools.codecoverage
-
-            xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
-              /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath . -executeMethod Coffee.CSharpCompilerSettings.Menus.SetDevelopMode
-          fi
-
-          xvfb-run --auto-servernum --server-args='-screen 0 640x480x24' \
-            /opt/Unity/Editor/Unity -batchmode -nographics -silent-crashes -logFile -projectPath . -runEditorTests -enableCodeCoverage -coverageOptions 'assemblyFilters:+CSharpCompilerSettings' || exit 0
+          $RUN_UNITY -executeMethod Coffee.CSharpCompilerSettings.Menus.SetDevelopMode || exit 0
+          $RUN_UNITY -runTests -testPlatform editmode -enableCodeCoverage || exit 0
 
       # Push test results
       - name: Push test results
