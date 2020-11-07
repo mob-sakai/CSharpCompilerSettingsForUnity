@@ -109,7 +109,7 @@ namespace Coffee.CSharpCompilerSettings
         private static string _assetPath;
         private static string[] _ignoredAssetPaths = {
             "Assets/CSharpCompilerSettings/Dev/CSharpCompilerSettings.Dev.asmdef",
-            "Assets/CSharpCompilerSettings/CSharpCompilerSettings.asmdef",
+            "Assets/CSharpCompilerSettings/CSharpCompilerSettings_.asmdef",
             "Packages/com.coffee.csharp-compiler-settings/Editor/CSharpCompilerSettings.Editor.asmdef",
         };
 
