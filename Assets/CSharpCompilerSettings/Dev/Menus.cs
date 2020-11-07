@@ -43,6 +43,7 @@ namespace Coffee.CSharpCompilerSettings
             }
 
             AssetDatabase.ImportAsset(k_EditorAsmdefPath);
+            AssetDatabase.ImportAsset(k_TestAsmdefPath);
             AssetDatabase.Refresh();
         }
 
