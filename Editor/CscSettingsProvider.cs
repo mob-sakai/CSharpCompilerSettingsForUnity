@@ -36,7 +36,7 @@ namespace Coffee.CSharpCompilerSettings
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("m_PackageName"));
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("m_PackageVersion"));
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("m_LanguageVersion"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_EnableNullable"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Nullable"));
                 EditorGUI.indentLevel--;
             }
 
