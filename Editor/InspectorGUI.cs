@@ -239,6 +239,8 @@ namespace Coffee.CSharpCompilerSettings
                     AssetDatabase.DeleteAsset(path);
                 }
             }
+
+            Core.UpdatePortableDll(asmdefPath, enabled);
         }
 
         private static void CopyFileIfNeeded(string src, string dst)
