@@ -1,3 +1,16 @@
+# [1.3.0](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/1.2.0...1.3.0) (2020-11-09)
+
+
+### Bug Fixes
+
+* support Unity 2020.2 or later ([181ea58](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/181ea586feda9e3a0b8cdc86578ae95c19807123)), closes [#6](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/6) [#7](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/7)
+* when enabling C# Settings in asmdef inspector, edits are lost ([0d86d20](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/0d86d20032e573771168d25dfc3027162027ce89))
+
+
+### Features
+
+* support all nullable settings ([789edaf](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/789edaf83d2ecab152b0efd5eb1a03c7fbfbacbd)), closes [#8](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/8)
+
 # [1.2.0](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/1.1.1...1.2.0) (2020-10-23)
 
 
