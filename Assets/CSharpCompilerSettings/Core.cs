@@ -19,7 +19,7 @@ namespace Coffee.CSharpCompilerSettings
         private static string k_LogHeader = "<b><color=#cc4444>[CscSettings]</color></b> ";
         static Dictionary<string, bool> s_EnableAsmdefs = new Dictionary<string, bool>();
         static Dictionary<string, string> s_AssemblyNames = new Dictionary<string, string>();
-        private static bool IsGlobal => typeof(Core).Assembly.GetName().Name == "CSharpCompilerSettings";
+        private static readonly bool IsGlobal;
 
         public static void LogDebug(string format, params object[] args)
         {
@@ -43,6 +43,32 @@ namespace Coffee.CSharpCompilerSettings
         public static void LogException(string format, params object[] args)
         {
             LogException(new Exception(string.Format(format, args)));
+        }
+
+        private static void DirtyScriptsIfNeeded()
+        {
+            var assemblyName = GetAssemblyName(FindAsmdef());
+            if (!IsGlobal && string.IsNullOrEmpty(assemblyName)) return;
+
+            var filepath = "Temp/" + typeof(Core).Assembly.GetName().Name + ".loaded";
+            if (File.Exists(filepath)) return;
+            File.WriteAllText(filepath, "");
+
+            var editorCompilation = Type.GetType("UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface, UnityEditor")
+                .Get("Instance");
+
+            if (IsGlobal)
+            {
+                editorCompilation.Call("DirtyAllScripts");
+                return;
+            }
+
+            var allScripts = editorCompilation.Get("allScripts") as Dictionary<string, string>;
+            var assemblyFilename = assemblyName + ".dll";
+            var path = allScripts.FirstOrDefault(x => x.Value == assemblyFilename).Key;
+            if (string.IsNullOrEmpty(path)) return;
+
+            editorCompilation.Call("DirtyScript", path, assemblyFilename);
         }
 
         public static string GetAssemblyName(string asmdefPath)
@@ -71,6 +97,11 @@ namespace Coffee.CSharpCompilerSettings
             s_EnableAsmdefs[asmdefPath] = enabled;
 
             return enabled;
+        }
+
+        public static void UpdatePortableDll(string asmdefPath, bool enabled)
+        {
+            s_EnableAsmdefs[asmdefPath] = enabled;
         }
 
         private static bool IsInSameDirectory(string path)
@@ -146,9 +177,8 @@ namespace Coffee.CSharpCompilerSettings
             text = Regex.Replace(text, "\n/debug\n", "\n/debug:portable\n");
             text += "\n/preferreduilang:en-US";
 
-            // Enable nullable.
-            if (setting.EnableNullable)
-                text += "\n/nullable:enable";
+            // Nullable.
+            text += "\n/nullable:" + setting.Nullable.ToString().ToLower();
 
             // Modify scripting define symbols.
             var defines = Regex.Matches(text, "^/define:(.*)$", RegexOptions.Multiline)
@@ -258,6 +288,11 @@ namespace Coffee.CSharpCompilerSettings
 
         static Core()
         {
+            IsGlobal = new string[]{
+                "CSharpCompilerSettings",
+                "CSharpCompilerSettings_",
+            }.Contains(typeof(Core).Assembly.GetName().Name);
+            
             if (!IsGlobal)
             {
                 var targetAssemblyName = GetAssemblyName(FindAsmdef());
@@ -306,6 +341,13 @@ namespace Coffee.CSharpCompilerSettings
                     LogException("Dotnet is not installed.");
                 }
             }
+
+            var version = Application.unityVersion.Split('.');
+            var major = int.Parse(version[0]);
+            var minor = int.Parse(version[1]);
+            // If Unity 2020.2 or newer, request re-compilation.
+            if ( 2021 <= major || (major == 2020 && 2 <= minor))
+                DirtyScriptsIfNeeded();
         }
     }
 }

@@ -1,7 +1,7 @@
 {
     "name": "CSharpCompilerSettings.Editor",
     "references": [
-        "CSharpCompilerSettings"
+        "CSharpCompilerSettings_"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [

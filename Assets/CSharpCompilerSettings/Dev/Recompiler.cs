@@ -10,7 +10,7 @@ namespace Coffee.CSharpCompilerSettings
 {
     internal class Recompiler : ScriptableSingleton<Recompiler>
     {
-        private const string k_AssemblySrc = "Library/ScriptAssemblies/CSharpCompilerSettings.dll";
+        private const string k_AssemblySrc = "Library/ScriptAssemblies/CSharpCompilerSettings_.dll";
         private const string k_ResponseFileSrc = "Assets/CSharpCompilerSettings/Dev/rsp";
         private const string k_ResponseFileDst = "Temp/CSharpCompilerSettings.rsp";
 
@@ -48,9 +48,15 @@ namespace Coffee.CSharpCompilerSettings
             File.WriteAllText(k_ResponseFileDst, rsp);
 
             // Detect csc tool exe.
+            var mono = Application.platform != RuntimePlatform.WindowsEditor;
             var cscToolExe = appContents + "/Tools/RoslynNet46/csc.exe".Replace('/', Path.DirectorySeparatorChar);
             if (!File.Exists(cscToolExe))
                 cscToolExe = appContents + "/Tools/Roslyn/csc.exe".Replace('/', Path.DirectorySeparatorChar);
+            if (!File.Exists(cscToolExe))
+            {
+                cscToolExe = appContents + "/Tools/Roslyn/csc".Replace('/', Path.DirectorySeparatorChar);
+                mono = false;
+            }
 
             // Create compilation process.
             var psi = new ProcessStartInfo
@@ -60,7 +66,7 @@ namespace Coffee.CSharpCompilerSettings
                 RedirectStandardError = true,
             };
 
-            if (Application.platform == RuntimePlatform.WindowsEditor)
+            if (!mono)
             {
                 psi.FileName = Path.GetFullPath(cscToolExe);
                 psi.Arguments = "/shared /noconfig @" + k_ResponseFileDst;

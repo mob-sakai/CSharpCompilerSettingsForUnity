@@ -1,7 +1,7 @@
 {
     "name": "CSharpCompilerSettings.Test",
     "references": [
-        "CSharpCompilerSettings",
+        "CSharpCompilerSettings_",
         "CSharpCompilerSettings.Editor",
         "CSharpCompilerSettings.Dev"
     ],
