@@ -1,6 +1,8 @@
 C# Compiler Settings For Unity
 ===
 
+**:warning: NOTE: Do not use [the obsolete tags and branches](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/10) to reference the package. They will be removed in near future. :warning:**
+
 Change the C# compiler (csc) used on your Unity project, as you like!
 
 [![](https://img.shields.io/npm/v/com.coffee.csharp-compiler-settings?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.coffee.csharp-compiler-settings/)
