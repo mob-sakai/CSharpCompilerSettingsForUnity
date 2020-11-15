@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text;
 using UnityEditor;
@@ -14,6 +15,68 @@ namespace Coffee.CSharpCompilerSettings
         Annotations,
     }
 
+    internal enum CompilerType
+    {
+        BuiltIn,
+        CustomPackage
+    }
+
+    [Serializable]
+    public struct NugetPackage
+    {
+        public enum CategoryType
+        {
+            Compiler,
+            Analyzer,
+        }
+
+        [SerializeField] private string m_Name;
+        [SerializeField] private string m_Version;
+        [SerializeField] private CategoryType m_Category;
+
+        public string PackageId
+        {
+            get { return m_Name + "." + m_Version; }
+        }
+
+        public string Name
+        {
+            get { return m_Name; }
+        }
+
+        public string Version
+        {
+            get { return m_Version; }
+        }
+
+        public CategoryType Category
+        {
+            get { return m_Category; }
+        }
+
+        public NugetPackage(string name, string version, CategoryType category = CategoryType.Compiler)
+        {
+            m_Name = name;
+            m_Version = version;
+            m_Category = category;
+        }
+
+        public override string ToString()
+        {
+            return PackageId;
+        }
+    }
+
+    public class SplitAttribute : PropertyAttribute
+    {
+        public char separater { get; }
+
+        public SplitAttribute(char separater)
+        {
+            this.separater = separater;
+        }
+    }
+
     internal class CscSettingsAsset : ScriptableObject, ISerializationCallbackReceiver
     {
         public const string k_SettingsPath = "ProjectSettings/CSharpCompilerSettings.asset";
@@ -27,10 +90,12 @@ namespace Coffee.CSharpCompilerSettings
         [SerializeField] private bool m_EnableLogging = false;
         [SerializeField] private bool m_EnableNullable = false;
         [SerializeField] private Nullable m_Nullable = Nullable.Disable;
+        [SerializeField] private NugetPackage m_CompilerPackage = new NugetPackage("Microsoft.Net.Compilers", "3.5.0", NugetPackage.CategoryType.Compiler);
 
         [Tooltip(
             "When compiling this assembly, add or remove specific symbols separated with semicolons (;) or commas (,).\nSymbols starting with '!' will be removed.\n\ne.g. 'SYMBOL_TO_ADD;!SYMBOL_TO_REMOVE;...'")]
         [SerializeField]
+        [Split(';')]
         private string m_ModifySymbols = "";
 
         private static CscSettingsAsset CreateFromProjectSettings()
@@ -42,11 +107,8 @@ namespace Coffee.CSharpCompilerSettings
         }
 
         private static CscSettingsAsset s_Instance;
-
         public static CscSettingsAsset instance => s_Instance ? s_Instance : s_Instance = CreateFromProjectSettings();
-
-        public string PackageId => m_PackageName + "." + m_PackageVersion;
-
+        public NugetPackage CompilerPackage => m_CompilerPackage;
         public bool UseDefaultCompiler => m_CompilerType == CompilerType.BuiltIn;
         public bool ShouldToRecompile => m_CompilerType == CompilerType.CustomPackage || !string.IsNullOrEmpty(m_ModifySymbols);
         public Nullable Nullable => m_Nullable;
@@ -100,7 +162,7 @@ namespace Coffee.CSharpCompilerSettings
         {
             try
             {
-                return !Core.HasPortableDll(path)
+                return string.IsNullOrEmpty(Core.GetPortableDllPath(path))
                     ? null
                     : CreateFromJson(AssetImporter.GetAtPath(path).userData);
             }
@@ -120,6 +182,9 @@ namespace Coffee.CSharpCompilerSettings
         public void OnBeforeSerialize()
         {
             m_UseDefaultCompiler = m_CompilerType == CompilerType.BuiltIn;
+            m_EnableNullable = m_Nullable != Nullable.Disable;
+            m_PackageName = m_CompilerPackage.Name;
+            m_PackageVersion = m_CompilerPackage.Version;
         }
 
         public void OnAfterDeserialize()
@@ -131,12 +196,19 @@ namespace Coffee.CSharpCompilerSettings
                     ? CompilerType.BuiltIn
                     : CompilerType.CustomPackage;
             }
+
             if (m_Version < 130)
             {
                 m_Version = 130;
                 m_Nullable = m_EnableNullable
                     ? Nullable.Enable
                     : Nullable.Disable;
+            }
+
+            if (m_Version < 140)
+            {
+                m_Version = 140;
+                m_CompilerPackage = new NugetPackage(m_PackageName, m_PackageVersion, NugetPackage.CategoryType.Compiler);
             }
         }
     }
