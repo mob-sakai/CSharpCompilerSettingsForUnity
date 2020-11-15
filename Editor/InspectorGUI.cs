@@ -29,6 +29,8 @@ namespace Coffee.CSharpCompilerSettings
         private static bool _hasPortableDll = false;
         private static bool _changed = false;
         private static string _assetPath;
+        private static ReorderableList _symbolModifier;
+
 
         private static string[] _ignoredAssetPaths =
         {
@@ -72,6 +74,28 @@ namespace Coffee.CSharpCompilerSettings
                 _changed = false;
             }
 
+            if (_symbolModifier == null)
+            {
+                _symbolModifier = new ReorderableList(_serializedObject, _serializedObject.FindProperty("m_SymbolModifier"));
+                _symbolModifier.elementHeight = EditorGUIUtility.singleLineHeight + 2;
+                _symbolModifier.drawHeaderCallback = rect =>
+                {
+                    var property = _symbolModifier.serializedProperty;
+                    EditorGUI.PrefixLabel(rect, new GUIContent(property.displayName));
+
+                    rect.x += rect.width - 100;
+                    rect.width = 100;
+                    EditorGUI.LabelField(rect, "* Prefix '!' to exclude.", EditorStyles.miniLabel);
+                };
+                _symbolModifier.drawElementCallback = (rect, index, active, focused) =>
+                {
+                    var sp = _symbolModifier.serializedProperty.GetArrayElementAtIndex(index);
+                    rect.height = EditorGUIUtility.singleLineHeight;
+                    EditorGUI.PropertyField(rect, sp, GUIContent.none);
+                };
+            }
+
+
             // Enable.
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
             EditorGUI.BeginChangeCheck();
@@ -79,7 +103,8 @@ namespace Coffee.CSharpCompilerSettings
             if (_hasPortableDll)
             {
                 DrawCompilerPackage(_serializedObject);
-                EditorGUILayout.PropertyField(_serializedObject.FindProperty("m_ModifySymbols"));
+                _symbolModifier.serializedProperty = _serializedObject.FindProperty("m_SymbolModifier");
+                _symbolModifier.DoLayoutList();
             }
 
             _changed |= EditorGUI.EndChangeCheck();
@@ -199,65 +224,6 @@ namespace Coffee.CSharpCompilerSettings
                 {
                     AssetDatabase.DeleteAsset(path);
                 }
-            }
-        }
-    }
-
-    [CustomPropertyDrawer(typeof(SplitAttribute))]
-    public class SplitDrawer : PropertyDrawer
-    {
-        private ReorderableList _ro = null;
-        private List<string> _list;
-        private static GUIContent s_PrefixHint = new GUIContent("* Prefix '!' to exclude");
-
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
-        {
-            if (property.propertyType != SerializedPropertyType.String) return EditorGUIUtility.singleLineHeight;
-
-            var s = property.stringValue;
-            var c = (attribute as SplitAttribute).separater;
-            var count = s.Length - s.Replace(c.ToString(), "").Length + 1;
-            return count * (EditorGUIUtility.singleLineHeight + 2) + 36;
-        }
-
-        // Draw the property inside the given rect
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
-        {
-            if (property.propertyType != SerializedPropertyType.String)
-            {
-                EditorGUI.LabelField(position, label.text, "Use Split with string.");
-                return;
-            }
-
-            var separater = (attribute as SplitAttribute).separater;
-            if (_ro == null)
-            {
-                _list = property.stringValue.Split(separater).ToList();
-
-                _ro = new ReorderableList(_list, typeof(string));
-                _ro.drawHeaderCallback = rect =>
-                {
-                    EditorGUI.PrefixLabel(rect, GUIUtility.GetControlID(FocusType.Passive), label);
-                    rect.x += rect.width - 100;
-                    rect.width = 100;
-                    EditorGUI.LabelField(rect, s_PrefixHint, EditorStyles.miniLabel);
-                };
-                _ro.onAddCallback = list => list.list.Add("");
-                _ro.elementHeight = EditorGUIUtility.singleLineHeight + 2;
-                _ro.drawElementCallback = (rect, index, active, focused) =>
-                {
-                    rect.height = EditorGUIUtility.singleLineHeight;
-                    _list[index] = EditorGUI.TextField(rect, _list[index]);
-                };
-            }
-
-            EditorGUI.BeginChangeCheck();
-            _ro.DoList(position);
-            if (EditorGUI.EndChangeCheck())
-            {
-                property.stringValue = 0 < _list.Count
-                    ? _list.Aggregate((a, b) => a + ";" + b)
-                    : "";
             }
         }
     }

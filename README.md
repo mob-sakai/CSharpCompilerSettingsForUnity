@@ -106,6 +106,7 @@ Let's enjoy C# 8.0 features with your Unity project!
     * Variables of a reference type, string for example, are non-nullable. All nullability warnings are disabled.
   * `disable`: The nullable annotation context is disabled. The nullable warning context is disabled.
     * Variables of a reference type are oblivious, just like earlier versions of C#. All nullability warnings are disabled.
+* `Analyzer` option to analyze your code on compile.
 
 [OpenSesame.Net.Compilers]: https://www.nuget.org/packages/OpenSesame.Net.Compilers
 [OpenSesame.Net.Compilers.Toolset]: https://www.nuget.org/packages/OpenSesame.Net.Compilers.Toolset

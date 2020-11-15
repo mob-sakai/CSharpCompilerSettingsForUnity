@@ -58,18 +58,6 @@ namespace Coffee.CSharpCompilerSettings
         }
 
         /// <summary>
-        /// Combine the paths.
-        /// </summary>
-        public static void ClearCache()
-        {
-            if (Directory.Exists("Library/InstalledPackages"))
-                Directory.Delete("Library/InstalledPackages", true);
-
-            if (Directory.Exists("Temp/DownloadedPackages"))
-                Directory.Delete("Temp/DownloadedPackages", true);
-        }
-
-        /// <summary>
         /// Install NuGet package.
         /// </summary>
         /// <param name="packageId">Package Id</param>

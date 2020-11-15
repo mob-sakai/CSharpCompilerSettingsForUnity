@@ -11,9 +11,8 @@ namespace Coffee.CSharpCompilerSettings
         private static SerializedProperty s_EnableLogging;
         private static SerializedProperty s_AnalyzerFilter;
         private static SerializedProperty s_PredefinedAssemblies;
-        private static SerializedProperty s_IncludedAssemblies;
-        private static ReorderableList s_RoAnalyzerPackages = null;
-
+        private static ReorderableList s_RoAnalyzerPackages;
+        private static ReorderableList s_RoIncludedAssemblies;
 
         [SettingsProvider]
         private static SettingsProvider CreateSettingsProvider()
@@ -22,14 +21,32 @@ namespace Coffee.CSharpCompilerSettings
             s_EnableLogging = serializedObject.FindProperty("m_EnableLogging");
             s_AnalyzerFilter = serializedObject.FindProperty("m_AnalyzerFilter");
             s_PredefinedAssemblies = s_AnalyzerFilter.FindPropertyRelative("m_PredefinedAssemblies");
-            s_IncludedAssemblies = s_AnalyzerFilter.FindPropertyRelative("m_IncludedAssemblies");
 
-            s_RoAnalyzerPackages = new ReorderableList(serializedObject, serializedObject.FindProperty("m_AnalyzerPackages"));
+            var analyzerPackages = serializedObject.FindProperty("m_AnalyzerPackages");
+            s_RoAnalyzerPackages = new ReorderableList(serializedObject, analyzerPackages);
             s_RoAnalyzerPackages.drawHeaderCallback = rect => EditorGUI.PrefixLabel(rect, GUIUtility.GetControlID(FocusType.Passive), new GUIContent("Analyzer Packages"));
             s_RoAnalyzerPackages.elementHeight = NugetPackageDrawer.Height;
             s_RoAnalyzerPackages.drawElementCallback = (rect, index, active, focused) =>
             {
-                var sp = s_RoAnalyzerPackages.serializedProperty.GetArrayElementAtIndex(index);
+                var sp = analyzerPackages.GetArrayElementAtIndex(index);
+                EditorGUI.PropertyField(rect, sp, GUIContent.none);
+            };
+
+            var includedAssemblies = s_AnalyzerFilter.FindPropertyRelative("m_IncludedAssemblies");
+            s_RoIncludedAssemblies = new ReorderableList(serializedObject, includedAssemblies);
+            s_RoIncludedAssemblies.drawHeaderCallback = rect =>
+            {
+                EditorGUI.PrefixLabel(rect, new GUIContent(includedAssemblies.displayName));
+
+                rect.x += rect.width - 100;
+                rect.width = 100;
+                EditorGUI.LabelField(rect, "* Prefix '!' to exclude.", EditorStyles.miniLabel);
+            };
+            s_RoIncludedAssemblies.elementHeight = EditorGUIUtility.singleLineHeight + 2;
+            s_RoIncludedAssemblies.drawElementCallback = (rect, index, active, focused) =>
+            {
+                var sp = includedAssemblies.GetArrayElementAtIndex(index);
+                rect.height = EditorGUIUtility.singleLineHeight;
                 EditorGUI.PropertyField(rect, sp, GUIContent.none);
             };
 
@@ -44,6 +61,7 @@ namespace Coffee.CSharpCompilerSettings
 
         private static void OnGUI(string searchContext)
         {
+            EditorGUILayout.LabelField("Compiler", EditorStyles.boldLabel);
             InspectorGUI.DrawCompilerPackage(serializedObject);
             EditorGUILayout.Space();
 
@@ -55,7 +73,7 @@ namespace Coffee.CSharpCompilerSettings
                 {
                     NugetPackageCatalog.CurrentCategory = NugetPackage.CategoryType.Analyzer;
                     s_RoAnalyzerPackages.DoLayoutList();
-                    EditorGUILayout.PropertyField(s_IncludedAssemblies);
+                    s_RoIncludedAssemblies.DoLayoutList();
                     GUILayout.Space(-16);
                     EditorGUILayout.PropertyField(s_PredefinedAssemblies);
                 }

@@ -54,19 +54,27 @@ namespace Coffee.CSharpCompilerSettings
                 .FirstOrDefault(x => Regex.IsMatch(x, "CSharpCompilerSettings_[0-9a-zA-Z]{32}.dll"));
         }
 
-
         private static bool IsInSameDirectory(string path)
         {
             if (string.IsNullOrEmpty(path)) return false;
 
-            var dir = Path.GetFullPath(Path.GetDirectoryName(path));
-            var coreAssemblyLocationDir = Path.GetFullPath(Path.GetDirectoryName(typeof(Core).Assembly.Location));
+            var dir = Path.GetFullPath(Path.GetDirectoryName(path)).ToLower();
+            var coreAssemblyLocationDir = Path.GetFullPath(Path.GetDirectoryName(typeof(Core).Assembly.Location)).ToLower();
             return dir == coreAssemblyLocationDir;
         }
 
-        private static string FindAsmdef()
+        private static string FindAsmdef(string path = null)
         {
-            var asmdefPath = Directory.GetFiles(Path.GetDirectoryName(typeof(Core).Assembly.Location), "*.asmdef")
+            if (string.IsNullOrEmpty(path))
+            {
+                var assemblyPath = typeof(Core).Assembly.Location;
+                assemblyPath = AssetDatabase.FindAssets("t:DefaultAsset " + Path.GetFileNameWithoutExtension(assemblyPath))
+                    .Select(AssetDatabase.GUIDToAssetPath)
+                    .FirstOrDefault(x => x.EndsWith(".dll"));
+                path = Path.GetDirectoryName(assemblyPath);
+            }
+
+            var asmdefPath = Directory.GetFiles(path, "*.asmdef")
                 .FirstOrDefault(x => x.EndsWith(".asmdef")) ?? "";
 
             return asmdefPath.Replace('\\', '/').Replace(Environment.CurrentDirectory.Replace('\\', '/') + "/", "");
@@ -89,7 +97,8 @@ namespace Coffee.CSharpCompilerSettings
             var command = oldCommand.Replace(EditorApplication.applicationContentsPath.Replace('\\', '/'), "@APP_CONTENTS@");
             var isDefaultCsc = Regex.IsMatch(command, "@APP_CONTENTS@/[^ ]*(mcs|csc)");
             var assemblyName = Path.GetFileNameWithoutExtension(scriptAssembly.Get("Filename") as string);
-            var originPath = scriptAssembly.Get("OriginPath") as string;
+            var asmdefDir = scriptAssembly.Get("OriginPath") as string;
+            var asmdefPath = string.IsNullOrEmpty(asmdefDir) ? "" : FindAsmdef(asmdefDir);
 
             // csc is not Unity default. It is already modified.
             if (!isDefaultCsc)
@@ -101,62 +110,72 @@ namespace Coffee.CSharpCompilerSettings
             // Kill current process.
             compiler.Call("Dispose");
 
-            var compilerInfo = CompilerInfo.GetInstalledInfo(setting.CompilerPackage.PackageId);
-
-            // csc is not installed. Restart current process.
-            if (!compilerInfo.IsValid)
-            {
-                Logger.LogWarning("  <color=#bbbb44><Skipped> C# compiler '{0}' is not installed. Restart compiler process: {1}</color>", compilerInfo.Path, oldCommand);
-
-                var currentProgram = tProgram.New(psi);
-                currentProgram.Call("Start");
-                compiler.Set("process", currentProgram, fiProcess);
-                return;
-            }
-
-            // Change exe file path.
+            // Response file.
             var responseFile = Regex.Replace(psi.Arguments, "^.*@(.+)$", "$1");
-            compilerInfo.Setup(psi, responseFile);
-
             var text = File.ReadAllText(responseFile);
             text = Regex.Replace(text, "[\r\n]+", "\n");
             text = Regex.Replace(text, "^-", "/");
-            text = Regex.Replace(text, "\n/langversion:[^\n]+\n", "\n/langversion:" + setting.LanguageVersion + "\n");
             text = Regex.Replace(text, "\n/debug\n", "\n/debug:portable\n");
             text += "\n/preferreduilang:en-US";
 
-            // Nullable.
-            text += "\n/nullable:" + setting.Nullable.ToString().ToLower();
-
-            // Modify scripting define symbols.
-            var defines = Regex.Matches(text, "^/define:(.*)$", RegexOptions.Multiline)
-                .Cast<Match>()
-                .Select(x => x.Groups[1].Value);
-            text = Regex.Replace(text, "[\r\n]+/define:[^\r\n]+", "");
-            var modifiedDefines = Utils.ModifySymbols(defines, setting.AdditionalSymbols);
-            foreach (var d in modifiedDefines)
-                text += "\n/define:" + d;
-
-            // Setup analyzer.
-            foreach (var package in setting.AnalyzerPackages)
+            // Compiler
+            if (!setting.UseDefaultCompiler)
             {
-                var analyzerInfo = AnalyzerInfo.GetInstalledInfo(package.PackageId);
-                foreach (var dll in analyzerInfo.DllFiles)
-                    text += string.Format("\n/analyzer:\"{0}\"", dll);
+                var compilerInfo = CompilerInfo.GetInstalledInfo(setting.CompilerPackage.PackageId);
+
+                // csc is not installed. Restart current process.
+                if (!compilerInfo.IsValid)
+                {
+                    Logger.LogWarning("  <color=#bbbb44><Skipped> C# compiler '{0}' is not installed. Restart compiler process: {1}</color>", compilerInfo.Path, oldCommand);
+
+                    var currentProgram = tProgram.New(psi);
+                    currentProgram.Call("Start");
+                    compiler.Set("process", currentProgram, fiProcess);
+                    return;
+                }
+
+                // Change exe file path.
+                compilerInfo.Setup(psi, responseFile);
+                text = Regex.Replace(text, "\n/langversion:[^\n]+\n", "\n/langversion:" + setting.LanguageVersion + "\n");
+
+                // Nullable.
+                text += "\n/nullable:" + setting.Nullable.ToString().ToLower();
             }
 
-            // Ruleset.
-            var rulesets = new[] {"Assets/Default.ruleset"}
-                .Concat(string.IsNullOrEmpty(originPath)
-                    ? new[] {"Assets/" + assemblyName + ".ruleset"}
-                    : Directory.GetFiles(originPath, "*.ruleset"))
-                .Where(File.Exists);
+            // Modify scripting define symbols.
+            if (!string.IsNullOrEmpty(setting.AdditionalSymbols))
+            {
+                var defines = Regex.Matches(text, "^/define:(.*)$", RegexOptions.Multiline)
+                    .Cast<Match>()
+                    .Select(x => x.Groups[1].Value);
+                text = Regex.Replace(text, "[\r\n]+/define:[^\r\n]+", "");
+                var modifiedDefines = Utils.ModifySymbols(defines, setting.AdditionalSymbols);
+                foreach (var d in modifiedDefines)
+                    text += "\n/define:" + d;
+            }
 
-            foreach (var ruleset in rulesets)
-                text += string.Format("\n/ruleset:\"{0}\"", ruleset);
+            // Analyzer.
+            var globalSettings = CscSettingsAsset.instance;
+            if (globalSettings.ShouldToRecompileToAnalyze(asmdefPath))
+            {
+                // Analyzer dlls.
+                foreach (var package in globalSettings.AnalyzerPackages)
+                {
+                    var analyzerInfo = AnalyzerInfo.GetInstalledInfo(package.PackageId);
+                    foreach (var dll in analyzerInfo.DllFiles)
+                        text += string.Format("\n/analyzer:\"{0}\"", dll);
+                }
 
+                // Ruleset.
+                var rulesets = new[] {"Assets/Default.ruleset"}
+                    .Concat(string.IsNullOrEmpty(asmdefDir)
+                        ? new[] {"Assets/" + assemblyName + ".ruleset"}
+                        : Directory.GetFiles(asmdefDir, "*.ruleset"))
+                    .Where(File.Exists);
 
-
+                foreach (var ruleset in rulesets)
+                    text += string.Format("\n/ruleset:\"{0}\"", ruleset);
+            }
 
             // Replace NewLine and save.
             text = Regex.Replace(text, "\n", Environment.NewLine);
@@ -188,12 +207,13 @@ namespace Coffee.CSharpCompilerSettings
                 var compilerTasks = tEditorCompilationInterface.Get("Instance").Get("compilationTask").Get("compilerTasks") as IDictionary;
                 var scriptAssembly = compilerTasks.Keys.Cast<object>().FirstOrDefault(x => (x.Get("Filename") as string) == assemblyName + ".dll");
                 if (scriptAssembly == null)
+                {
+                    Logger.LogWarning("  <color=#bbbb44><Skipped> scriptAssembly <b>'{0}'</b> is not found.</color>", assemblyName);
                     return;
+                }
 
                 var asmdefDir = scriptAssembly.Get("OriginPath") as string;
-                var asmdefPath = string.IsNullOrEmpty(asmdefDir)
-                    ? ""
-                    : Directory.GetFiles(asmdefDir, "*.asmdef").First().Replace('\\', '/').Replace(Environment.CurrentDirectory.Replace('\\', '/') + "/", "");
+                var asmdefPath = string.IsNullOrEmpty(asmdefDir) ? "" : FindAsmdef(asmdefDir);
                 if (IsGlobal && GetPortableDllPath(asmdefPath) != null)
                 {
                     Logger.LogWarning("  <color=#bbbb44><Skipped> Local CSharpCompilerSettings.*.dll for <b>'{0}'</b> is found.</color>", assemblyName);
@@ -206,10 +226,9 @@ namespace Coffee.CSharpCompilerSettings
                     return;
                 }
 
-                var settings = IsGlobal
-                    ? CscSettingsAsset.instance
-                    : CscSettingsAsset.GetAtPath(asmdefPath);
-                if (!settings || !settings.ShouldToRecompile)
+                var globalSettings = CscSettingsAsset.instance;
+                var settings = GetSettings();
+                if (!settings.ShouldToRecompile && !globalSettings.ShouldToRecompileToAnalyze(asmdefPath))
                 {
                     Logger.LogWarning("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> does not need to be recompiled.</color>", assemblyName);
                     return;
@@ -276,11 +295,12 @@ namespace Coffee.CSharpCompilerSettings
 
             // Install custom csc before compilation.
             var settings = GetSettings();
-            if (!settings || settings.UseDefaultCompiler) return;
-            CompilerInfo.GetInstalledInfo(settings.CompilerPackage.PackageId);
+            if (!settings.UseDefaultCompiler)
+                CompilerInfo.GetInstalledInfo(settings.CompilerPackage.PackageId);
 
-            foreach (var package in settings.AnalyzerPackages)
-                AnalyzerInfo.GetInstalledInfo(package.PackageId);
+            if (IsGlobal)
+                foreach (var package in settings.AnalyzerPackages.Where(x => x.IsValid))
+                    AnalyzerInfo.GetInstalledInfo(package.PackageId);
 
             // If Unity 2020.2 or newer, request re-compilation.
             var version = Application.unityVersion.Split('.');
