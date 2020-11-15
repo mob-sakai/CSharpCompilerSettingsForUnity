@@ -3,9 +3,8 @@ using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 using System.Text.RegularExpressions;
-using UnityEditor.Compilation;
 using System;
-using System.Security.Cryptography;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Coffee.CSharpCompilerSettings
@@ -13,8 +12,8 @@ namespace Coffee.CSharpCompilerSettings
     [InitializeOnLoad]
     internal static class InspectorGUI
     {
-        private static string s_AssemblyNameToPublish;
-        private static string s_AsmdefPathToPublish;
+        private const string k_BaseDll = "Packages/com.coffee.csharp-compiler-settings/Plugins/CSharpCompilerSettings.dll";
+
         private static GUIContent s_EnableText = new GUIContent("Enable C# Compiler Settings", "Enable C# compiler settings for this assembly.");
 
         private static GUIContent s_ModifySymbolsText = new GUIContent("Modify Symbols",
@@ -26,60 +25,17 @@ namespace Coffee.CSharpCompilerSettings
         static GUIContent s_ApplyText = new GUIContent("Apply");
         static GUIContent s_RevertText = new GUIContent("Revert");
 
-        static void OnAssemblyCompilationFinished(string name, CompilerMessage[] messages)
+        private static SerializedObject _serializedObject;
+        private static bool _hasPortableDll = false;
+        private static bool _changed = false;
+        private static string _assetPath;
+
+        private static string[] _ignoredAssetPaths =
         {
-            try
-            {
-                // This assembly is requested to publish?
-                var assemblyName = Path.GetFileNameWithoutExtension(name);
-                if (s_AssemblyNameToPublish != assemblyName)
-                    return;
-
-                s_AssemblyNameToPublish = null;
-                Core.LogInfo("Assembly compilation finished: <b>{0} is requested to publish.</b>", assemblyName);
-
-                // No compilation error?
-                if (messages.Any(x => x.type == CompilerMessageType.Error))
-                    return;
-
-                // Publish a dll to parent directory.
-                var dst = Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(s_AsmdefPathToPublish)), assemblyName + ".dll");
-                var src = "Library/ScriptAssemblies/" + Path.GetFileName(dst);
-                Core.LogInfo("<b>Publish assembly as dll:</b> " + dst);
-                CopyFileIfUpdated(Path.GetFullPath(src), Path.GetFullPath(dst));
-
-                EditorApplication.delayCall += () => AssetDatabase.ImportAsset(dst);
-            }
-            catch (Exception e)
-            {
-                Core.LogException(e);
-            }
-        }
-
-        public static void CopyFileIfUpdated(string src, string dst)
-        {
-            src = Path.GetFullPath(src);
-            if (!File.Exists(src))
-                return;
-
-            dst = Path.GetFullPath(dst);
-            if (File.Exists(dst))
-            {
-                using (var srcFs = new FileStream(src, FileMode.Open))
-                using (var dstFs = new FileStream(dst, FileMode.Open))
-                using (var md5 = new MD5CryptoServiceProvider())
-                {
-                    if (md5.ComputeHash(srcFs).SequenceEqual(md5.ComputeHash(dstFs)))
-                        return;
-                }
-            }
-
-            var dir = Path.GetDirectoryName(dst);
-            if (!Directory.Exists(dir))
-                Directory.CreateDirectory(dir);
-
-            File.Copy(src, dst, true);
-        }
+            "Assets/CSharpCompilerSettings/Dev/CSharpCompilerSettings.Dev.asmdef",
+            "Assets/CSharpCompilerSettings/CSharpCompilerSettings_.asmdef",
+            "Packages/com.coffee.csharp-compiler-settings/Editor/CSharpCompilerSettings.Editor.asmdef",
+        };
 
         static InspectorGUI()
         {
@@ -90,7 +46,6 @@ namespace Coffee.CSharpCompilerSettings
             s_HelpText = new GUIContent("Help", "Open C# compiler settings help page on browser.");
 
             Editor.finishedDefaultHeaderGUI += OnPostHeaderGUI;
-            CompilationPipeline.assemblyCompilationFinished += OnAssemblyCompilationFinished;
 
             // Select asmdef asset on load.
             var activeObject = Selection.activeObject;
@@ -103,17 +58,6 @@ namespace Coffee.CSharpCompilerSettings
             Selection.selectionChanged += () => { _assetPath = null; };
         }
 
-        private static SerializedObject _serializedObject;
-        private static bool _hasPortableDll = false;
-        private static bool _changed = false;
-        private static string _assetPath;
-        private static string[] _ignoredAssetPaths = {
-            "Assets/CSharpCompilerSettings/Dev/CSharpCompilerSettings.Dev.asmdef",
-            "Assets/CSharpCompilerSettings/CSharpCompilerSettings_.asmdef",
-            "Packages/com.coffee.csharp-compiler-settings/Editor/CSharpCompilerSettings.Editor.asmdef",
-        };
-
-
         private static void OnPostHeaderGUI(Editor editor)
         {
             var importer = editor.target as AssemblyDefinitionImporter;
@@ -124,7 +68,7 @@ namespace Coffee.CSharpCompilerSettings
             {
                 _assetPath = importer.assetPath;
                 _serializedObject = new SerializedObject(CscSettingsAsset.CreateFromJson(importer.userData));
-                _hasPortableDll = Core.HasPortableDll(importer.assetPath);
+                _hasPortableDll = Core.GetPortableDllPath(importer.assetPath) != null;
                 _changed = false;
             }
 
@@ -134,77 +78,94 @@ namespace Coffee.CSharpCompilerSettings
             _hasPortableDll = EditorGUILayout.ToggleLeft(s_EnableText, _hasPortableDll, EditorStyles.boldLabel);
             if (_hasPortableDll)
             {
-                var spCompilerType = _serializedObject.FindProperty("m_CompilerType");
-                EditorGUILayout.PropertyField(spCompilerType);
-
-                if (spCompilerType.intValue == (int) CompilerType.CustomPackage)
-                {
-                    EditorGUI.indentLevel++;
-                    EditorGUILayout.PropertyField(_serializedObject.FindProperty("m_PackageName"));
-                    EditorGUILayout.PropertyField(_serializedObject.FindProperty("m_PackageVersion"));
-                    EditorGUILayout.PropertyField(_serializedObject.FindProperty("m_LanguageVersion"));
-                    EditorGUILayout.PropertyField(_serializedObject.FindProperty("m_Nullable"));
-                    EditorGUI.indentLevel--;
-                }
-
+                DrawCompilerPackage(_serializedObject);
                 EditorGUILayout.PropertyField(_serializedObject.FindProperty("m_ModifySymbols"));
             }
 
             _changed |= EditorGUI.EndChangeCheck();
 
             // Controls
-            using (new GUILayout.HorizontalScope())
-            {
-                GUILayout.FlexibleSpace();
-
-                using (new EditorGUI.DisabledScope(!_changed))
-                {
-                    if (GUILayout.Button(s_RevertText))
-                    {
-                        _assetPath = null;
-                    }
-
-                    if (GUILayout.Button(s_ApplyText))
-                    {
-                        _assetPath = null;
-                        _serializedObject.ApplyModifiedProperties();
-                        importer.userData = JsonUtility.ToJson(_serializedObject.targetObject);
-                        importer.SaveAndReimport();
-
-                        if (_hasPortableDll != Core.HasPortableDll(importer.assetPath))
-                            EnablePortableDll(importer.assetPath, _hasPortableDll);
-                    }
-                }
-
-                using (new EditorGUI.DisabledScope(!_hasPortableDll))
-                {
-                    if (GUILayout.Button(s_ReloadText))
-                    {
-                        _assetPath = null;
-                        EnablePortableDll(importer.assetPath, true);
-                        AutoImporter.ImportOnFinishedCompilation(importer.assetPath);
-                    }
-                }
-
-                if (GUILayout.Button(s_PublishText))
+            DrawControl(_changed,
+                onRevert: () => _assetPath = null,
+                onApply: () =>
                 {
                     _assetPath = null;
-                    s_AsmdefPathToPublish = importer.assetPath;
-                    s_AssemblyNameToPublish = Core.GetAssemblyName(importer.assetPath);
-                    Core.LogInfo("<b><color=#22aa22>Request to publish dll:</color> {0}</b>", s_AssemblyNameToPublish);
+                    _serializedObject.ApplyModifiedProperties();
+                    importer.userData = JsonUtility.ToJson(_serializedObject.targetObject);
+                    importer.SaveAndReimport();
 
+                    var hasPortableDll = Core.GetPortableDllPath(importer.assetPath) != null;
+                    if (_hasPortableDll != hasPortableDll)
+                        EnablePortableDll(importer.assetPath, _hasPortableDll);
+                },
+                onReload: () =>
+                {
+                    _assetPath = null;
+                    EnablePortableDll(importer.assetPath, true);
+                    AutoImporter.ImportOnFinishedCompilation(importer.assetPath);
+                },
+                onPublish: () =>
+                {
+                    _assetPath = null;
+                    AutoImporter.RequestPublishDll(importer.assetPath, Core.GetAssemblyName(importer.assetPath));
                     importer.SaveAndReimport();
                 }
-            }
+            );
 
             EditorGUILayout.EndVertical();
         }
 
+        public static void DrawCompilerPackage(SerializedObject so)
+        {
+            var spCompilerType = so.FindProperty("m_CompilerType");
+            EditorGUILayout.PropertyField(spCompilerType);
+
+            if (spCompilerType.intValue == (int) CompilerType.CustomPackage)
+            {
+                EditorGUI.indentLevel++;
+                NugetPackageCatalog.CurrentCategory = NugetPackage.CategoryType.Compiler;
+                EditorGUILayout.PropertyField(so.FindProperty("m_CompilerPackage"), GUIContent.none);
+                EditorGUILayout.PropertyField(so.FindProperty("m_LanguageVersion"));
+                EditorGUILayout.PropertyField(so.FindProperty("m_Nullable"));
+                EditorGUI.indentLevel--;
+            }
+        }
+
+        public static void DrawControl(bool changed, Action onRevert = null, Action onApply = null, Action onReload = null, Action onPublish = null)
+        {
+            EditorGUILayout.Space();
+
+            using (new GUILayout.HorizontalScope())
+            {
+                GUILayout.FlexibleSpace();
+
+                using (new EditorGUI.DisabledScope(!changed))
+                {
+                    if (onRevert != null && GUILayout.Button(s_RevertText))
+                        onRevert();
+
+                    if (onApply != null && GUILayout.Button(s_ApplyText))
+                        onApply();
+                }
+
+                if (onReload != null && GUILayout.Button(s_ReloadText))
+                    onReload();
+
+                if (onPublish != null && GUILayout.Button(s_PublishText))
+                    onPublish();
+            }
+        }
+
+        /// <summary>
+        /// Install/Uninstall a portable CSharpCompilerSettings.dll in the asmdef directory.
+        /// In portable mode, a unique suffix is added to the assembly name and file name.
+        /// </summary>
+        /// <param name="asmdefPath">Path of the asmdef</param>
+        /// <param name="enabled">Condition</param>
         private static void EnablePortableDll(string asmdefPath, bool enabled)
         {
             if (enabled)
             {
-                var src = "Packages/com.coffee.csharp-compiler-settings/Plugins/CSharpCompilerSettings.dll";
                 var guid = Directory.GetFiles(Path.GetDirectoryName(asmdefPath))
                     .Select(x => Regex.Match(x, "CSharpCompilerSettings_([0-9a-zA-Z]{32}).dll").Groups[1].Value)
                     .FirstOrDefault(x => !string.IsNullOrEmpty(x));
@@ -215,16 +176,16 @@ namespace Coffee.CSharpCompilerSettings
                 var dst = Path.GetDirectoryName(asmdefPath) + "/CSharpCompilerSettings_" + guid + ".dll";
 
                 // Copy dll with renaming assembly name.
-                File.Copy(src, tmpDst, true);
+                File.Copy(k_BaseDll, tmpDst, true);
                 AssemblyRenamer.Rename(tmpDst, Path.GetFileNameWithoutExtension(dst));
-                CopyFileIfNeeded(tmpDst, dst);
+                EditorUtils.CopyFileIfNeeded(tmpDst, dst);
 
                 // Copy meta.
-                File.Copy(src + ".meta~", tmpDst + ".meta", true);
+                File.Copy(k_BaseDll + ".meta~", tmpDst + ".meta", true);
                 var meta = File.ReadAllText(tmpDst + ".meta");
                 meta = Regex.Replace(meta, "<<GUID>>", guid);
                 File.WriteAllText(tmpDst + ".meta", meta);
-                CopyFileIfNeeded(tmpDst + ".meta", dst + ".meta");
+                EditorUtils.CopyFileIfNeeded(tmpDst + ".meta", dst + ".meta");
 
                 // Request to compile.
                 EditorApplication.delayCall += AssetDatabase.Refresh;
@@ -239,25 +200,65 @@ namespace Coffee.CSharpCompilerSettings
                     AssetDatabase.DeleteAsset(path);
                 }
             }
+        }
+    }
 
-            Core.UpdatePortableDll(asmdefPath, enabled);
+    [CustomPropertyDrawer(typeof(SplitAttribute))]
+    public class SplitDrawer : PropertyDrawer
+    {
+        private ReorderableList _ro = null;
+        private List<string> _list;
+        private static GUIContent s_PrefixHint = new GUIContent("* Prefix '!' to exclude");
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        {
+            if (property.propertyType != SerializedPropertyType.String) return EditorGUIUtility.singleLineHeight;
+
+            var s = property.stringValue;
+            var c = (attribute as SplitAttribute).separater;
+            var count = s.Length - s.Replace(c.ToString(), "").Length + 1;
+            return count * (EditorGUIUtility.singleLineHeight + 2) + 36;
         }
 
-        private static void CopyFileIfNeeded(string src, string dst)
+        // Draw the property inside the given rect
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            if (File.Exists(dst))
+            if (property.propertyType != SerializedPropertyType.String)
             {
-                using (var md5 = MD5.Create())
-                using (var srcStream = File.OpenRead(src))
-                using (var dstStream = File.OpenRead(dst))
-                    if (md5.ComputeHash(srcStream).SequenceEqual(md5.ComputeHash(dstStream)))
-                    {
-                        Core.LogInfo("  <color=#bbbb44><Skipped> No difference: {0}</color>", dst);
-                        return;
-                    }
+                EditorGUI.LabelField(position, label.text, "Use Split with string.");
+                return;
             }
 
-            File.Copy(src, dst, true);
+            var separater = (attribute as SplitAttribute).separater;
+            if (_ro == null)
+            {
+                _list = property.stringValue.Split(separater).ToList();
+
+                _ro = new ReorderableList(_list, typeof(string));
+                _ro.drawHeaderCallback = rect =>
+                {
+                    EditorGUI.PrefixLabel(rect, GUIUtility.GetControlID(FocusType.Passive), label);
+                    rect.x += rect.width - 100;
+                    rect.width = 100;
+                    EditorGUI.LabelField(rect, s_PrefixHint, EditorStyles.miniLabel);
+                };
+                _ro.onAddCallback = list => list.list.Add("");
+                _ro.elementHeight = EditorGUIUtility.singleLineHeight + 2;
+                _ro.drawElementCallback = (rect, index, active, focused) =>
+                {
+                    rect.height = EditorGUIUtility.singleLineHeight;
+                    _list[index] = EditorGUI.TextField(rect, _list[index]);
+                };
+            }
+
+            EditorGUI.BeginChangeCheck();
+            _ro.DoList(position);
+            if (EditorGUI.EndChangeCheck())
+            {
+                property.stringValue = 0 < _list.Count
+                    ? _list.Aggregate((a, b) => a + ";" + b)
+                    : "";
+            }
         }
     }
 }

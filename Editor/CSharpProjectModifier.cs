@@ -15,18 +15,20 @@ namespace Coffee.CSharpCompilerSettings
                 .Select(x => AssetDatabase.GUIDToAssetPath(x))
                 .FirstOrDefault(x => Path.GetFileName(x) == assemblyName + ".asmdef");
 
-            Core.LogDebug("<color=orange>OnGeneratedCSProject</color> {0} -> {1} ({2})", path, assemblyName, asmdefPath);
+            Logger.LogDebug("<color=orange>OnGeneratedCSProject</color> {0} -> {1} ({2})", path, assemblyName, asmdefPath);
             var setting = CscSettingsAsset.GetAtPath(asmdefPath) ?? CscSettingsAsset.instance;
 
             // Modify define symbols.
             var defines = Regex.Match(content, "<DefineConstants>(.*)</DefineConstants>").Groups[1].Value.Split(';', ',');
-            defines = Core.ModifyDefineSymbols(defines, setting.AdditionalSymbols);
+            defines = Utils.ModifySymbols(defines, setting.AdditionalSymbols);
             var defineText = string.Join(";", defines);
             content = Regex.Replace(content, "<DefineConstants>(.*)</DefineConstants>", string.Format("<DefineConstants>{0}</DefineConstants>", defineText), RegexOptions.Multiline);
 
-            // Language version.
             if (!setting.UseDefaultCompiler)
+            {
+                // Language version.
                 content = Regex.Replace(content, "<LangVersion>.*</LangVersion>", "<LangVersion>" + setting.LanguageVersion + "</LangVersion>", RegexOptions.Multiline);
+            }
 
             // Nullable.
             var value = setting.Nullable.ToString().ToLower();

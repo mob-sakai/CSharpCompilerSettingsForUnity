@@ -5,45 +5,20 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.Compilation;
+using Assembly = System.Reflection.Assembly;
 
 namespace Coffee.CSharpCompilerSettings
 {
     [InitializeOnLoad]
     internal static class Core
     {
-        private static string k_LogHeader = "<b><color=#cc4444>[CscSettings]</color></b> ";
-        static Dictionary<string, bool> s_EnableAsmdefs = new Dictionary<string, bool>();
-        static Dictionary<string, string> s_AssemblyNames = new Dictionary<string, string>();
+        private static readonly Dictionary<string, bool> s_EnableAsmdefs = new Dictionary<string, bool>();
+        private static readonly Dictionary<string, string> s_AssemblyNames = new Dictionary<string, string>();
         private static readonly bool IsGlobal;
-
-        public static void LogDebug(string format, params object[] args)
-        {
-            if (CscSettingsAsset.instance.EnableDebugLog)
-                LogInfo(format, args);
-        }
-
-        public static void LogInfo(string format, params object[] args)
-        {
-            if (args == null || args.Length == 0)
-                UnityEngine.Debug.Log(k_LogHeader + format);
-            else
-                UnityEngine.Debug.LogFormat(k_LogHeader + format, args);
-        }
-
-        public static void LogException(Exception e)
-        {
-            UnityEngine.Debug.LogException(new Exception(k_LogHeader + e.Message, e.InnerException));
-        }
-
-        public static void LogException(string format, params object[] args)
-        {
-            LogException(new Exception(string.Format(format, args)));
-        }
 
         private static void DirtyScriptsIfNeeded()
         {
@@ -54,21 +29,7 @@ namespace Coffee.CSharpCompilerSettings
             if (File.Exists(filepath)) return;
             File.WriteAllText(filepath, "");
 
-            var editorCompilation = Type.GetType("UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface, UnityEditor")
-                .Get("Instance");
-
-            if (IsGlobal)
-            {
-                editorCompilation.Call("DirtyAllScripts");
-                return;
-            }
-
-            var allScripts = editorCompilation.Get("allScripts") as Dictionary<string, string>;
-            var assemblyFilename = assemblyName + ".dll";
-            var path = allScripts.FirstOrDefault(x => x.Value == assemblyFilename).Key;
-            if (string.IsNullOrEmpty(path)) return;
-
-            editorCompilation.Call("DirtyScript", path, assemblyFilename);
+            Utils.RequestCompilation(IsGlobal ? null : assemblyName);
         }
 
         public static string GetAssemblyName(string asmdefPath)
@@ -85,24 +46,14 @@ namespace Coffee.CSharpCompilerSettings
             return assemblyName;
         }
 
-        public static bool HasPortableDll(string asmdefPath)
+        public static string GetPortableDllPath(string asmdefPath)
         {
-            if (string.IsNullOrEmpty(asmdefPath)) return false;
-            bool enabled;
-            if (s_EnableAsmdefs.TryGetValue(asmdefPath, out enabled)) return enabled;
+            if (string.IsNullOrEmpty(asmdefPath)) return null;
 
-            enabled = Directory.GetFiles(Path.GetDirectoryName(asmdefPath))
-                .Any(x => Regex.IsMatch(x, "CSharpCompilerSettings_[0-9a-zA-Z]{32}.dll"));
-
-            s_EnableAsmdefs[asmdefPath] = enabled;
-
-            return enabled;
+            return Directory.GetFiles(Path.GetDirectoryName(asmdefPath))
+                .FirstOrDefault(x => Regex.IsMatch(x, "CSharpCompilerSettings_[0-9a-zA-Z]{32}.dll"));
         }
 
-        public static void UpdatePortableDll(string asmdefPath, bool enabled)
-        {
-            s_EnableAsmdefs[asmdefPath] = enabled;
-        }
 
         private static bool IsInSameDirectory(string path)
         {
@@ -128,18 +79,6 @@ namespace Coffee.CSharpCompilerSettings
                 : CscSettingsAsset.GetAtPath(FindAsmdef()) ?? ScriptableObject.CreateInstance<CscSettingsAsset>();
         }
 
-        public static string[] ModifyDefineSymbols(IEnumerable<string> defines, string modifySymbols)
-        {
-            var symbols = modifySymbols.Split(';', ',');
-            var add = symbols.Where(x => 0 < x.Length && !x.StartsWith("!"));
-            var remove = symbols.Where(x => 1 < x.Length && x.StartsWith("!")).Select(x => x.Substring(1));
-            return defines
-                .Union(add)
-                .Except(remove)
-                .Distinct()
-                .ToArray();
-        }
-
         private static void ChangeCompilerProcess(object compiler, object scriptAssembly, CscSettingsAsset setting)
         {
             var tProgram = Type.GetType("UnityEditor.Utils.Program, UnityEditor");
@@ -149,27 +88,36 @@ namespace Coffee.CSharpCompilerSettings
             var oldCommand = (psi.FileName + " " + psi.Arguments).Replace('\\', '/');
             var command = oldCommand.Replace(EditorApplication.applicationContentsPath.Replace('\\', '/'), "@APP_CONTENTS@");
             var isDefaultCsc = Regex.IsMatch(command, "@APP_CONTENTS@/[^ ]*(mcs|csc)");
+            var assemblyName = Path.GetFileNameWithoutExtension(scriptAssembly.Get("Filename") as string);
+            var originPath = scriptAssembly.Get("OriginPath") as string;
 
             // csc is not Unity default. It is already modified.
             if (!isDefaultCsc)
             {
-                LogDebug("  <color=#bbbb44><Skipped> current csc is not Unity default. It is already modified.</color>");
-                return;
-            }
-
-            var compilerInfo = CustomCompiler.GetInstalledPath(setting.PackageId);
-
-            // csc is not installed.
-            if (!compilerInfo.HasValue)
-            {
-                LogDebug("  <color=#bbbb44><Skipped> custom csc is not installed.</color>");
+                Logger.LogWarning("  <color=#bbbb44><Skipped> current csc is not Unity default. It is already modified.</color>");
                 return;
             }
 
             // Kill current process.
             compiler.Call("Dispose");
 
+            var compilerInfo = CompilerInfo.GetInstalledInfo(setting.CompilerPackage.PackageId);
+
+            // csc is not installed. Restart current process.
+            if (!compilerInfo.IsValid)
+            {
+                Logger.LogWarning("  <color=#bbbb44><Skipped> C# compiler '{0}' is not installed. Restart compiler process: {1}</color>", compilerInfo.Path, oldCommand);
+
+                var currentProgram = tProgram.New(psi);
+                currentProgram.Call("Start");
+                compiler.Set("process", currentProgram, fiProcess);
+                return;
+            }
+
+            // Change exe file path.
             var responseFile = Regex.Replace(psi.Arguments, "^.*@(.+)$", "$1");
+            compilerInfo.Setup(psi, responseFile);
+
             var text = File.ReadAllText(responseFile);
             text = Regex.Replace(text, "[\r\n]+", "\n");
             text = Regex.Replace(text, "^-", "/");
@@ -184,50 +132,21 @@ namespace Coffee.CSharpCompilerSettings
             var defines = Regex.Matches(text, "^/define:(.*)$", RegexOptions.Multiline)
                 .Cast<Match>()
                 .Select(x => x.Groups[1].Value);
-
             text = Regex.Replace(text, "[\r\n]+/define:[^\r\n]+", "");
-            var modifiedDefines = ModifyDefineSymbols(defines, setting.AdditionalSymbols);
+            var modifiedDefines = Utils.ModifySymbols(defines, setting.AdditionalSymbols);
             foreach (var d in modifiedDefines)
                 text += "\n/define:" + d;
 
-            if (CscSettingsAsset.instance.EnableDebugLog)
-            {
-                var sb = new StringBuilder();
-                foreach (var added in modifiedDefines.Except(defines))
-                    sb.AppendFormat("<color=#22aa22><b>{0}</b></color> (added)\n", added);
-                foreach (var removed in defines.Except(modifiedDefines))
-                    sb.AppendFormat("<color=#bb4444><b>{0}</b></color> (removed)\n", removed);
-                foreach (var added in modifiedDefines.Intersect(defines))
-                    sb.AppendFormat("{0}\n", added);
-
-                LogDebug("Modify scripting define symbols:\n{0}", sb);
-            }
-
-
-            // Change exe file path.
-            if (compilerInfo.Value.Runtime == CompilerRuntime.NetFramework)
-            {
-                if (Application.platform == RuntimePlatform.WindowsEditor)
-                {
-                    psi.FileName = Path.GetFullPath(compilerInfo.Value.Path);
-                    psi.Arguments = "/shared /noconfig @" + responseFile;
-                }
-                else
-                {
-                    psi.FileName = Path.Combine(EditorApplication.applicationContentsPath, "MonoBleedingEdge/bin/mono");
-                    psi.Arguments = compilerInfo.Value.Path + " /noconfig @" + responseFile;
-                }
-            }
-            else
-            {
-                psi.FileName = Path.GetFullPath(DotnetRuntime.GetInstalledPath());
-                psi.Arguments = compilerInfo.Value.Path + " /noconfig @" + responseFile;
-            }
-
+            // Replace NewLine and save.
             text = Regex.Replace(text, "\n", Environment.NewLine);
             File.WriteAllText(responseFile, text);
 
-            LogDebug("Restart compiler process: {0} {1}\n  old command = {2}", psi.FileName, psi.Arguments, oldCommand);
+            // Logging
+            if (CscSettingsAsset.instance.EnableDebugLog)
+                Logger.LogDebug("Response file '{0}' has been modified:\n{1}", responseFile, Regex.Replace(text, "\n/reference.*", "") + "\n\n* The references are skipped because it was too long.");
+
+            // Restart compiler process.
+            Logger.LogDebug("Restart compiler process: {0} {1}\n  old command = {2}", psi.FileName, psi.Arguments, oldCommand);
             var program = tProgram.New(psi);
             program.Call("Start");
             compiler.Set("process", program, fiProcess);
@@ -238,10 +157,9 @@ namespace Coffee.CSharpCompilerSettings
             try
             {
                 var assemblyName = Path.GetFileNameWithoutExtension(name);
-                // LogDebug("<color=#22aa22>Assembly compilation started: <b>{0}</b></color>\n", assemblyName);
                 if (assemblyName == typeof(Core).Assembly.GetName().Name)
                 {
-                    LogDebug("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> requires default csc.</color>", assemblyName);
+                    Logger.LogWarning("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> requires default csc.</color>", assemblyName);
                     return;
                 }
 
@@ -255,15 +173,15 @@ namespace Coffee.CSharpCompilerSettings
                 var asmdefPath = string.IsNullOrEmpty(asmdefDir)
                     ? ""
                     : Directory.GetFiles(asmdefDir, "*.asmdef").First().Replace('\\', '/').Replace(Environment.CurrentDirectory.Replace('\\', '/') + "/", "");
-                if (IsGlobal && HasPortableDll(asmdefPath))
+                if (IsGlobal && GetPortableDllPath(asmdefPath) != null)
                 {
-                    LogDebug("  <color=#bbbb44><Skipped> Local CSharpCompilerSettings.*.dll for <b>'{0}'</b> is found.</color>", assemblyName);
+                    Logger.LogWarning("  <color=#bbbb44><Skipped> Local CSharpCompilerSettings.*.dll for <b>'{0}'</b> is found.</color>", assemblyName);
                     return;
                 }
 
                 if (!IsGlobal && !IsInSameDirectory(asmdefPath))
                 {
-                    LogDebug("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> is not target.</color>", assemblyName);
+                    Logger.LogWarning("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> is not target.</color>", assemblyName);
                     return;
                 }
 
@@ -272,81 +190,80 @@ namespace Coffee.CSharpCompilerSettings
                     : CscSettingsAsset.GetAtPath(asmdefPath);
                 if (!settings || !settings.ShouldToRecompile)
                 {
-                    LogDebug("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> does not need to be recompiled.</color>", assemblyName);
+                    Logger.LogWarning("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> does not need to be recompiled.</color>", assemblyName);
                     return;
                 }
 
                 // Create new compiler to recompile.
-                LogDebug("<color=#22aa22>Assembly compilation started: <b>{0} should be recompiled.</b></color>\nsettings = {1}", assemblyName, JsonUtility.ToJson(settings));
+                Logger.LogDebug("<color=#22aa22>Assembly compilation started: <b>{0} should be recompiled.</b></color>\nsettings = {1}", assemblyName, JsonUtility.ToJson(settings));
                 ChangeCompilerProcess(compilerTasks[scriptAssembly], scriptAssembly, settings);
             }
             catch (Exception e)
             {
-                LogException(e);
+                Logger.LogException(e);
             }
         }
 
         static Core()
         {
-            IsGlobal = new string[]{
+            IsGlobal = new[]
+            {
                 "CSharpCompilerSettings",
                 "CSharpCompilerSettings_",
             }.Contains(typeof(Core).Assembly.GetName().Name);
-            
-            if (!IsGlobal)
+
+            // Setup logger.
+            if (IsGlobal)
+            {
+                Logger.Setup(
+                    "<b><color=#bb4444>[CscSettings]</color></b> ",
+                    () => CscSettingsAsset.instance.EnableDebugLog
+                );
+            }
+            else
             {
                 var targetAssemblyName = GetAssemblyName(FindAsmdef());
-                if (string.IsNullOrEmpty(targetAssemblyName))
-                {
-                    LogException("Target assembly is not found. {0}", typeof(Core).Assembly.Location.Replace(Environment.CurrentDirectory, "."));
-                }
+                Logger.Setup(
+                    "<b><color=#bb4444>[CscSettings (<color=orange>" + targetAssemblyName + "</color>)]</color></b> ",
+                    () => CscSettingsAsset.instance.EnableDebugLog
+                );
 
-                k_LogHeader = string.Format("<b><color=#bb4444>[CscSettings (<color=orange>{0}</color>)]</color></b> ", targetAssemblyName);
+                if (string.IsNullOrEmpty(targetAssemblyName))
+                    Logger.LogException("Target assembly is not found. {0}", typeof(Core).Assembly.Location.Replace(Environment.CurrentDirectory, "."));
             }
 
             // Dump loaded assemblies
-            // if (CscSettingsAsset.instance.EnableDebugLog)
-            // {
-            //     var sb = new StringBuilder("<color=#22aa22><b>InitializeOnLoad,</b></color> the loaded assemblies:\n");
-            //     foreach (var asm in Type.GetType("UnityEditor.EditorAssemblies, UnityEditor").Get("loadedAssemblies") as Assembly[])
-            //     {
-            //         var name = asm.GetName().Name;
-            //         var path = asm.Location;
-            //         if (path.Contains(Path.GetDirectoryName(EditorApplication.applicationPath)))
-            //             sb.AppendFormat("  > {0}:\t{1}\n", name, "APP_PATH/.../" + Path.GetFileName(path));
-            //         else
-            //             sb.AppendFormat("  > <color=#22aa22><b>{0}</b></color>:\t{1}\n", name, path.Replace(Environment.CurrentDirectory, "."));
-            //     }
-            //
-            //     LogDebug(sb.ToString());
-            // }
+            if (CscSettingsAsset.instance.EnableDebugLog)
+            {
+                var sb = new System.Text.StringBuilder("<color=#22aa22><b>InitializeOnLoad,</b></color> the loaded assemblies:\n");
+                foreach (var asm in Type.GetType("UnityEditor.EditorAssemblies, UnityEditor").Get("loadedAssemblies") as Assembly[])
+                {
+                    var name = asm.GetName().Name;
+                    var path = asm.Location;
+                    if (path.Contains(Path.GetDirectoryName(EditorApplication.applicationPath)))
+                        sb.AppendFormat("  > {0}:\t{1}\n", name, "APP_PATH/.../" + Path.GetFileName(path));
+                    else
+                        sb.AppendFormat("  > <color=#22aa22><b>{0}</b></color>:\t{1}\n", name, path.Replace(Environment.CurrentDirectory, "."));
+                }
 
-            LogDebug("<color=#22aa22><b>InitializeOnLoad:</b></color> start watching assembly compilation.");
+                Logger.LogDebug(sb.ToString());
+            }
+
+            // Register callback.
+            Logger.LogDebug("<color=#22aa22><b>InitializeOnLoad:</b></color> start watching assembly compilation.");
             CompilationPipeline.assemblyCompilationStarted += OnAssemblyCompilationStarted;
 
             // Install custom csc before compilation.
             var settings = GetSettings();
             if (!settings || settings.UseDefaultCompiler) return;
+            CompilerInfo.GetInstalledInfo(settings.CompilerPackage.PackageId);
 
-            var compilerInfo = CustomCompiler.GetInstalledPath(settings.PackageId);
-            if (!compilerInfo.HasValue)
-            {
-                LogException("Custom csc is not installed. {0}", settings.PackageId);
-            }
-            else if (compilerInfo.Value.Runtime == CompilerRuntime.NetCore)
-            {
-                var dotnetPath = DotnetRuntime.GetInstalledPath();
-                if (string.IsNullOrEmpty(dotnetPath))
-                {
-                    LogException("Dotnet is not installed.");
-                }
-            }
 
+            // If Unity 2020.2 or newer, request re-compilation.
             var version = Application.unityVersion.Split('.');
             var major = int.Parse(version[0]);
             var minor = int.Parse(version[1]);
-            // If Unity 2020.2 or newer, request re-compilation.
-            if ( 2021 <= major || (major == 2020 && 2 <= minor))
+            if (2021 <= major || (major == 2020 && 2 <= minor))
                 DirtyScriptsIfNeeded();
         }
     }

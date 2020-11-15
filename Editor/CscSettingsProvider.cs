@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -8,11 +7,13 @@ namespace Coffee.CSharpCompilerSettings
     internal class CscSettingsProvider
     {
         private static SerializedObject serializedObject;
+        private static SerializedProperty s_EnableLogging;
 
         [SettingsProvider]
         private static SettingsProvider CreateSettingsProvider()
         {
             serializedObject = new SerializedObject(CscSettingsAsset.instance);
+            s_EnableLogging = serializedObject.FindProperty("m_EnableLogging");
             var keywords = SettingsProvider.GetSearchKeywordsFromSerializedObject(serializedObject);
             return new SettingsProvider("Project/C# Compiler", SettingsScope.Project)
             {
@@ -24,51 +25,27 @@ namespace Coffee.CSharpCompilerSettings
 
         private static void OnGUI(string searchContext)
         {
-            if (serializedObject == null)
-                serializedObject = new SerializedObject(CscSettingsAsset.instance);
+            InspectorGUI.DrawCompilerPackage(serializedObject);
+            EditorGUILayout.Space();
 
-            var spCompilerType = serializedObject.FindProperty("m_CompilerType");
-            EditorGUILayout.PropertyField(spCompilerType);
-
-            if (spCompilerType.intValue == (int) CompilerType.CustomPackage)
             {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_PackageName"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_PackageVersion"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_LanguageVersion"));
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("m_Nullable"));
-                EditorGUI.indentLevel--;
             }
 
             EditorGUILayout.Space();
 
             EditorGUILayout.LabelField("Debug", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("m_EnableLogging"));
+            EditorGUILayout.PropertyField(s_EnableLogging);
 
             // Controls
-            using (new EditorGUI.DisabledScope(!serializedObject.hasModifiedProperties))
-            using (new GUILayout.HorizontalScope())
-            {
-                GUILayout.FlexibleSpace();
-
-                if (GUILayout.Button("Revert"))
-                {
-                    serializedObject = new SerializedObject(CscSettingsAsset.instance);
-                }
-
-                if (GUILayout.Button("Apply"))
+            InspectorGUI.DrawControl(serializedObject.hasModifiedProperties,
+                onRevert: () => { serializedObject = new SerializedObject(CscSettingsAsset.instance); },
+                onApply: () =>
                 {
                     serializedObject.ApplyModifiedProperties();
                     File.WriteAllText(CscSettingsAsset.k_SettingsPath, JsonUtility.ToJson(serializedObject.targetObject, true));
-                    RequestScriptCompilation();
+                    Utils.RequestCompilation();
                 }
-            }
-        }
-
-        public static void RequestScriptCompilation()
-        {
-            Type.GetType("UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface, UnityEditor")
-                .Call("DirtyAllScripts");
+            );
         }
     }
 }

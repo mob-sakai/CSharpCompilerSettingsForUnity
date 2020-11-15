@@ -1,9 +1,7 @@
 {
     "name": "CSharpCompilerSettings.Dev",
     "references": [],
-    "optionalUnityReferences": [
-        "TestAssemblies"
-    ],
+    "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
     ],

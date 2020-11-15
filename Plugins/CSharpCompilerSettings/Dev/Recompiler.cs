@@ -70,6 +70,7 @@ namespace Coffee.CSharpCompilerSettings
                 CreateNoWindow = true,
                 UseShellExecute = false,
                 RedirectStandardError = true,
+                RedirectStandardOutput = true,
             };
 
             if (!mono)
@@ -91,7 +92,7 @@ namespace Coffee.CSharpCompilerSettings
                 if (p.ExitCode == 0)
                     Debug.Log("Recompile: success.");
                 else
-                    Debug.LogError("Recompile: failure.\n" + p.StandardError.ReadToEnd());
+                    Debug.LogErrorFormat("Recompile: failure.\n{0}\n\n{1}", p.StandardError.ReadToEnd(), p.StandardOutput.ReadToEnd());
             };
             p.EnableRaisingEvents = true;
         }
