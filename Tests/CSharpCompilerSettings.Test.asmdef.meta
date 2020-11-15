@@ -1,0 +1,7 @@
+fileFormatVersion: 2
+guid: d24fb9bc80cd54134af95db1ebe9081f
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: '{"m_UseDefaultCompiler":true,"m_Version":130,"m_CompilerType":0,"m_PackageName":"Microsoft.Net.Compilers","m_PackageVersion":"3.5.0","m_LanguageVersion":2147483647,"m_EnableLogging":false,"m_EnableNullable":false,"m_Nullable":0,"m_ModifySymbols":"ADD_SYMBOL;!UNITY_5_3_OR_NEWER"}'
+  assetBundleName: 
+  assetBundleVariant: 

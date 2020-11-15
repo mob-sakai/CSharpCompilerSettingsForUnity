@@ -14,21 +14,6 @@ on:
       - synchronize
 
 jobs:
-  release-test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-
-      - run: |
-          npm i --no-save https://gist.github.com/mob-sakai/c90044338361af97a7e8c8a78425bdb3
-          npx semantic-release -e @mob-sakai/semantic-release-upm --dry-run --debug --branches develop
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-      
-      - run: cat package.json
-      
-      - run: ls
-
   unity-test:
     strategy:
       fail-fast: false
@@ -134,7 +119,6 @@ jobs:
       - name: "Run editmode tests"
         if: always() && steps.activation.conclusion == 'success'
         run: |
-          $RUN_UNITY -executeMethod Coffee.CSharpCompilerSettings.Menus.SetDevelopMode || exit 0
           $RUN_UNITY -runTests -testPlatform editmode -enableCodeCoverage || exit 0
 
       # Push test results
