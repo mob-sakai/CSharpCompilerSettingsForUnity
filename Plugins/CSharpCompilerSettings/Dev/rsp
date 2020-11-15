@@ -24,3 +24,4 @@
 "${PLUGIN_SOURCE}/RuntimeInfo.cs"
 "${PLUGIN_SOURCE}/Utils.cs"
 "${PLUGIN_SOURCE}/Logger.cs"
+"${PLUGIN_SOURCE}/AnalyzerInfo.cs"

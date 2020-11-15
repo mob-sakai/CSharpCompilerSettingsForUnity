@@ -137,6 +137,27 @@ namespace Coffee.CSharpCompilerSettings
             foreach (var d in modifiedDefines)
                 text += "\n/define:" + d;
 
+            // Setup analyzer.
+            foreach (var package in setting.AnalyzerPackages)
+            {
+                var analyzerInfo = AnalyzerInfo.GetInstalledInfo(package.PackageId);
+                foreach (var dll in analyzerInfo.DllFiles)
+                    text += string.Format("\n/analyzer:\"{0}\"", dll);
+            }
+
+            // Ruleset.
+            var rulesets = new[] {"Assets/Default.ruleset"}
+                .Concat(string.IsNullOrEmpty(originPath)
+                    ? new[] {"Assets/" + assemblyName + ".ruleset"}
+                    : Directory.GetFiles(originPath, "*.ruleset"))
+                .Where(File.Exists);
+
+            foreach (var ruleset in rulesets)
+                text += string.Format("\n/ruleset:\"{0}\"", ruleset);
+
+
+
+
             // Replace NewLine and save.
             text = Regex.Replace(text, "\n", Environment.NewLine);
             File.WriteAllText(responseFile, text);
@@ -258,6 +279,8 @@ namespace Coffee.CSharpCompilerSettings
             if (!settings || settings.UseDefaultCompiler) return;
             CompilerInfo.GetInstalledInfo(settings.CompilerPackage.PackageId);
 
+            foreach (var package in settings.AnalyzerPackages)
+                AnalyzerInfo.GetInstalledInfo(package.PackageId);
 
             // If Unity 2020.2 or newer, request re-compilation.
             var version = Application.unityVersion.Split('.');

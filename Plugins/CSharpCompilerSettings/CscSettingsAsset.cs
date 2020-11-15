@@ -67,6 +67,23 @@ namespace Coffee.CSharpCompilerSettings
         }
     }
 
+    [Serializable]
+    public struct AnalyzerFilter
+    {
+        [Tooltip("Include predefined assemblies (e.g. Assembly-CSharp.dll)")]
+        [SerializeField] private bool m_PredefinedAssemblies;
+
+        [Tooltip("Include assemblies filter. Separate multiple values with ';'. Prefix '!' to exclude (e.g. 'Assets/;!Packages/')")]
+        [Split(';')]
+        [SerializeField] private string m_IncludedAssemblies;
+
+        public AnalyzerFilter(bool predefinedAssemblies, string includedAssemblies)
+        {
+            m_PredefinedAssemblies = predefinedAssemblies;
+            m_IncludedAssemblies = includedAssemblies;
+        }
+    }
+
     public class SplitAttribute : PropertyAttribute
     {
         public char separater { get; }
@@ -91,6 +108,8 @@ namespace Coffee.CSharpCompilerSettings
         [SerializeField] private bool m_EnableNullable = false;
         [SerializeField] private Nullable m_Nullable = Nullable.Disable;
         [SerializeField] private NugetPackage m_CompilerPackage = new NugetPackage("Microsoft.Net.Compilers", "3.5.0", NugetPackage.CategoryType.Compiler);
+        [SerializeField] private NugetPackage[] m_AnalyzerPackages = new NugetPackage[0];
+        [SerializeField] private AnalyzerFilter m_AnalyzerFilter = new AnalyzerFilter(true, "Assets/;!Packages/");
 
         [Tooltip(
             "When compiling this assembly, add or remove specific symbols separated with semicolons (;) or commas (,).\nSymbols starting with '!' will be removed.\n\ne.g. 'SYMBOL_TO_ADD;!SYMBOL_TO_REMOVE;...'")]
@@ -112,6 +131,8 @@ namespace Coffee.CSharpCompilerSettings
         public bool UseDefaultCompiler => m_CompilerType == CompilerType.BuiltIn;
         public bool ShouldToRecompile => m_CompilerType == CompilerType.CustomPackage || !string.IsNullOrEmpty(m_ModifySymbols);
         public Nullable Nullable => m_Nullable;
+        public NugetPackage[] AnalyzerPackages => m_AnalyzerPackages;
+        public AnalyzerFilter AnalyzerFilter => m_AnalyzerFilter;
 
         public string LanguageVersion
         {
