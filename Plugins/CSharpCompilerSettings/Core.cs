@@ -175,6 +175,16 @@ namespace Coffee.CSharpCompilerSettings
 
                 foreach (var ruleset in rulesets)
                     text += string.Format("\n/ruleset:\"{0}\"", ruleset);
+
+                // Editor Config.
+                var configs = new[]
+                  {
+                    ".editorconfig",
+                    Utils.PathCombine(asmdefDir ?? "Assets", ".editorconfig")
+                  }
+                  .Where(File.Exists);
+                foreach (var config in configs)
+                  text += string.Format("\n/analyzerconfig:\"{0}\"", config);
             }
 
             // Replace NewLine and save.
