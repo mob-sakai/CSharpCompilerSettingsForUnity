@@ -74,7 +74,7 @@ namespace Coffee.CSharpCompilerSettings
                     NugetPackageCatalog.CurrentCategory = NugetPackage.CategoryType.Analyzer;
                     s_RoAnalyzerPackages.DoLayoutList();
                     s_RoIncludedAssemblies.DoLayoutList();
-                    GUILayout.Space(-16);
+                    GUILayout.Space(-18);
                     EditorGUILayout.PropertyField(s_PredefinedAssemblies);
                 }
             }
