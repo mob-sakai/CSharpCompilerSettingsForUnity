@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -16,11 +15,9 @@ namespace Coffee.CSharpCompilerSettings
     [InitializeOnLoad]
     internal static class Core
     {
-        private static readonly Dictionary<string, bool> s_EnableAsmdefs = new Dictionary<string, bool>();
-        private static readonly Dictionary<string, string> s_AssemblyNames = new Dictionary<string, string>();
-        private static readonly bool IsGlobal;
+        public static bool IsGlobal { get; private set; }
 
-        private static void DirtyScriptsIfNeeded()
+        public static void DirtyScriptsIfNeeded()
         {
             var assemblyName = GetAssemblyName(FindAsmdef());
             if (!IsGlobal && string.IsNullOrEmpty(assemblyName)) return;
@@ -36,14 +33,8 @@ namespace Coffee.CSharpCompilerSettings
         {
             if (string.IsNullOrEmpty(asmdefPath)) return null;
 
-            string assemblyName;
-            if (s_AssemblyNames.TryGetValue(asmdefPath, out assemblyName)) return assemblyName;
-
             var m = Regex.Match(File.ReadAllText(asmdefPath), "\"name\":\\s*\"([^\"]*)\"");
-            assemblyName = m.Success ? m.Groups[1].Value : "";
-            s_AssemblyNames[asmdefPath] = assemblyName;
-
-            return assemblyName;
+            return m.Success ? m.Groups[1].Value : "";
         }
 
         public static string GetPortableDllPath(string asmdefPath)
@@ -54,7 +45,7 @@ namespace Coffee.CSharpCompilerSettings
                 .FirstOrDefault(x => Regex.IsMatch(x, "CSharpCompilerSettings_[0-9a-zA-Z]{32}.dll"));
         }
 
-        private static bool IsInSameDirectory(string path)
+        public static bool IsInSameDirectory(string path)
         {
             if (string.IsNullOrEmpty(path)) return false;
 
@@ -63,7 +54,7 @@ namespace Coffee.CSharpCompilerSettings
             return dir == coreAssemblyLocationDir;
         }
 
-        private static string FindAsmdef(string path = null)
+        public static string FindAsmdef(string path = null)
         {
             if (string.IsNullOrEmpty(path))
             {
@@ -80,66 +71,31 @@ namespace Coffee.CSharpCompilerSettings
             return asmdefPath.Replace('\\', '/').Replace(Environment.CurrentDirectory.Replace('\\', '/') + "/", "");
         }
 
-        private static CscSettingsAsset GetSettings()
+        public static CscSettingsAsset GetSettings()
         {
             return IsGlobal
                 ? CscSettingsAsset.instance
                 : CscSettingsAsset.GetAtPath(FindAsmdef()) ?? ScriptableObject.CreateInstance<CscSettingsAsset>();
         }
 
-        private static void ChangeCompilerProcess(object compiler, object scriptAssembly, CscSettingsAsset setting)
+        public static string ModifyResponseFile(CscSettingsAsset setting, string assemblyName, string asmdefPath, string text)
         {
-            var tProgram = Type.GetType("UnityEditor.Utils.Program, UnityEditor");
-            var tScriptCompilerBase = Type.GetType("UnityEditor.Scripting.Compilers.ScriptCompilerBase, UnityEditor");
-            var fiProcess = tScriptCompilerBase.GetField("process", BindingFlags.NonPublic | BindingFlags.Instance);
-            var psi = compiler.Get("process", fiProcess).Call("GetProcessStartInfo") as ProcessStartInfo;
-            var oldCommand = (psi.FileName + " " + psi.Arguments).Replace('\\', '/');
-            var command = oldCommand.Replace(EditorApplication.applicationContentsPath.Replace('\\', '/'), "@APP_CONTENTS@");
-            var isDefaultCsc = Regex.IsMatch(command, "@APP_CONTENTS@/[^ ]*(mcs|csc)");
-            var assemblyName = Path.GetFileNameWithoutExtension(scriptAssembly.Get("Filename") as string);
-            var asmdefDir = scriptAssembly.Get("OriginPath") as string;
-            var asmdefPath = string.IsNullOrEmpty(asmdefDir) ? "" : FindAsmdef(asmdefDir);
-
-            // csc is not Unity default. It is already modified.
-            if (!isDefaultCsc)
-            {
-                Logger.LogWarning("  <color=#bbbb44><Skipped> current csc is not Unity default. It is already modified.</color>");
-                return;
-            }
-
-            // Kill current process.
-            compiler.Call("Dispose");
-
-            // Response file.
-            var responseFile = Regex.Replace(psi.Arguments, "^.*@(.+)$", "$1");
-            var text = File.ReadAllText(responseFile);
+            var asmdefDir = string.IsNullOrEmpty(asmdefPath) ? null : Path.GetDirectoryName(asmdefPath);
             text = Regex.Replace(text, "[\r\n]+", "\n");
             text = Regex.Replace(text, "^-", "/");
             text = Regex.Replace(text, "\n/debug\n", "\n/debug:portable\n");
+            text = Regex.Replace(text, "\n/nullable.*", "");
             text += "\n/preferreduilang:en-US";
 
             // Compiler
             if (!setting.UseDefaultCompiler)
             {
-                var compilerInfo = CompilerInfo.GetInstalledInfo(setting.CompilerPackage.PackageId);
-
-                // csc is not installed. Restart current process.
-                if (!compilerInfo.IsValid)
-                {
-                    Logger.LogWarning("  <color=#bbbb44><Skipped> C# compiler '{0}' is not installed. Restart compiler process: {1}</color>", compilerInfo.Path, oldCommand);
-
-                    var currentProgram = tProgram.New(psi);
-                    currentProgram.Call("Start");
-                    compiler.Set("process", currentProgram, fiProcess);
-                    return;
-                }
-
-                // Change exe file path.
-                compilerInfo.Setup(psi, responseFile);
+                // Change language version.
                 text = Regex.Replace(text, "\n/langversion:[^\n]+\n", "\n/langversion:" + setting.LanguageVersion + "\n");
 
                 // Nullable.
-                text += "\n/nullable:" + setting.Nullable.ToString().ToLower();
+                if (setting.IsSupportNullable)
+                    text += "\n/nullable:" + setting.Nullable.ToString().ToLower();
             }
 
             // Modify scripting define symbols.
@@ -177,18 +133,71 @@ namespace Coffee.CSharpCompilerSettings
                     text += string.Format("\n/ruleset:\"{0}\"", ruleset);
 
                 // Editor Config.
-                var configs = new[]
-                  {
-                    ".editorconfig",
-                    Utils.PathCombine(asmdefDir ?? "Assets", ".editorconfig")
-                  }
-                  .Where(File.Exists);
-                foreach (var config in configs)
-                  text += string.Format("\n/analyzerconfig:\"{0}\"", config);
+                // var configs = new[]
+                //     {
+                //         ".editorconfig",
+                //         Utils.PathCombine(asmdefDir ?? "Assets", ".editorconfig")
+                //     }
+                //     .Where(File.Exists);
+                // foreach (var config in configs)
+                //     text += string.Format("\n/analyzerconfig:\"{0}\"", config);
             }
 
             // Replace NewLine and save.
             text = Regex.Replace(text, "\n", Environment.NewLine);
+
+            return text;
+        }
+
+        private static void ChangeCompilerProcess(object compiler, object scriptAssembly, CscSettingsAsset setting)
+        {
+            var tProgram = Type.GetType("UnityEditor.Utils.Program, UnityEditor");
+            var tScriptCompilerBase = Type.GetType("UnityEditor.Scripting.Compilers.ScriptCompilerBase, UnityEditor");
+            var fiProcess = tScriptCompilerBase.GetField("process", BindingFlags.NonPublic | BindingFlags.Instance);
+            var psi = compiler.Get("process", fiProcess).Call("GetProcessStartInfo") as ProcessStartInfo;
+            var oldCommand = (psi.FileName + " " + psi.Arguments).Replace('\\', '/');
+            var command = oldCommand.Replace(EditorApplication.applicationContentsPath.Replace('\\', '/'), "@APP_CONTENTS@");
+            var isDefaultCsc = Regex.IsMatch(command, "@APP_CONTENTS@/[^ ]*(mcs|csc)");
+            var assemblyName = Path.GetFileNameWithoutExtension(scriptAssembly.Get("Filename") as string);
+            var asmdefDir = scriptAssembly.Get("OriginPath") as string;
+            var asmdefPath = string.IsNullOrEmpty(asmdefDir) ? "" : FindAsmdef(asmdefDir);
+
+            // csc is not Unity default. It is already modified.
+            if (!isDefaultCsc)
+            {
+                Logger.LogWarning("  <color=#bbbb44><Skipped> current csc is not Unity default. It is already modified.</color>");
+                return;
+            }
+
+            // Kill current process.
+            compiler.Call("Dispose");
+
+            // Response file.
+            var responseFile = Regex.Replace(psi.Arguments, "^.*@(.+)$", "$1");
+
+            // Compiler
+            if (!setting.UseDefaultCompiler)
+            {
+                var compilerInfo = CompilerInfo.GetInstalledInfo(setting.CompilerPackage.PackageId);
+
+                // csc is not installed. Restart current process.
+                if (!compilerInfo.IsValid)
+                {
+                    Logger.LogWarning("  <color=#bbbb44><Skipped> C# compiler '{0}' is not installed. Restart compiler process: {1}</color>", compilerInfo.Path, oldCommand);
+
+                    var currentProgram = tProgram.New(psi);
+                    currentProgram.Call("Start");
+                    compiler.Set("process", currentProgram, fiProcess);
+                    return;
+                }
+
+                // Change exe file path.
+                compilerInfo.Setup(psi, responseFile);
+            }
+
+            // Modify response file.
+            var text = File.ReadAllText(responseFile);
+            text = ModifyResponseFile(setting, assemblyName, asmdefPath, text);
             File.WriteAllText(responseFile, text);
 
             // Logging
@@ -202,7 +211,7 @@ namespace Coffee.CSharpCompilerSettings
             compiler.Set("process", program, fiProcess);
         }
 
-        private static void OnAssemblyCompilationStarted(string name)
+        public static void OnAssemblyCompilationStarted(string name)
         {
             try
             {
@@ -254,7 +263,7 @@ namespace Coffee.CSharpCompilerSettings
             }
         }
 
-        static Core()
+        public static void Initialize()
         {
             IsGlobal = new[]
             {
@@ -301,6 +310,7 @@ namespace Coffee.CSharpCompilerSettings
 
             // Register callback.
             Logger.LogDebug("<color=#22aa22><b>InitializeOnLoad:</b></color> start watching assembly compilation.");
+            CompilationPipeline.assemblyCompilationStarted -= OnAssemblyCompilationStarted;
             CompilationPipeline.assemblyCompilationStarted += OnAssemblyCompilationStarted;
 
             // Install custom csc before compilation.
@@ -318,6 +328,11 @@ namespace Coffee.CSharpCompilerSettings
             var minor = int.Parse(version[1]);
             if (2021 <= major || (major == 2020 && 2 <= minor))
                 DirtyScriptsIfNeeded();
+        }
+
+        static Core()
+        {
+            Initialize();
         }
     }
 }

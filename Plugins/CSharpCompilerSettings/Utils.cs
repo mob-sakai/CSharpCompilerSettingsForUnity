@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text.RegularExpressions;
 using System.Threading;
 using UnityEditor;
 using UnityEngine;
@@ -13,6 +12,8 @@ namespace Coffee.CSharpCompilerSettings
 {
     internal static class Utils
     {
+        public static bool DisableCompilation { get; set; }
+
         /// <summary>
         /// Combine the paths.
         /// </summary>
@@ -45,7 +46,10 @@ namespace Coffee.CSharpCompilerSettings
 
             if (string.IsNullOrEmpty(assemblyName))
             {
-                editorCompilation.Call("DirtyAllScripts");
+                if (DisableCompilation)
+                    Logger.LogWarning("Skipped: Disable compilation");
+                else
+                    editorCompilation.Call("DirtyAllScripts");
                 return;
             }
 
@@ -54,7 +58,10 @@ namespace Coffee.CSharpCompilerSettings
             var path = allScripts.FirstOrDefault(x => x.Value == assemblyFilename).Key;
             if (string.IsNullOrEmpty(path)) return;
 
-            editorCompilation.Call("DirtyScript", path, assemblyFilename);
+            if (DisableCompilation)
+                Logger.LogWarning("Skipped: Disable compilation");
+            else
+                editorCompilation.Call("DirtyScript", path, assemblyFilename);
         }
 
         /// <summary>
@@ -64,10 +71,19 @@ namespace Coffee.CSharpCompilerSettings
         /// <returns>Installed directory path</returns>
         public static string InstallNugetPackage(string packageId)
         {
-            Regex.IsMatch(packageId, @".*\.\d+\.\d+\.*");
-
             var url = "https://globalcdn.nuget.org/packages/" + packageId.ToLower() + ".nupkg";
             return InstallPackage(packageId, url);
+        }
+
+        /// <summary>
+        /// Uninstall NuGet package.
+        /// </summary>
+        /// <param name="packageId">Package Id</param>
+        public static void UninstallNugetPackage(string packageId)
+        {
+            var installPath = PathCombine("Library", "InstalledPackages", packageId);
+            if (Directory.Exists(installPath))
+                Directory.Delete(installPath, true);
         }
 
         /// <summary>

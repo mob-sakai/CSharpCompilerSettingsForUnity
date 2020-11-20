@@ -31,6 +31,14 @@ namespace Coffee.CSharpCompilerSettings
                 var sp = analyzerPackages.GetArrayElementAtIndex(index);
                 EditorGUI.PropertyField(rect, sp, GUIContent.none);
             };
+            s_RoAnalyzerPackages.onChangedCallback = list =>
+            {
+                for (var i = 0; i < analyzerPackages.arraySize; i++)
+                {
+                    var sp = analyzerPackages.GetArrayElementAtIndex(i);
+                    sp.FindPropertyRelative("m_Category").intValue = (int)NugetPackage.CategoryType.Analyzer;
+                }
+            };
 
             var includedAssemblies = s_AnalyzerFilter.FindPropertyRelative("m_IncludedAssemblies");
             s_RoIncludedAssemblies = new ReorderableList(serializedObject, includedAssemblies);

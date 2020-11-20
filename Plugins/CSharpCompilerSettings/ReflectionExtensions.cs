@@ -28,13 +28,16 @@ namespace Coffee.CSharpCompilerSettings
         public static object Call(this object self, string methodName, params object[] args)
         {
             var types = args.Select(x => x.GetType()).ToArray();
-            return self.Type().GetMethod(methodName, types)
+            return self.Type().GetMethods(FLAGS)
+                .Where(x => x.Name == methodName)
+                .First(x => x.GetParameters().Select(y => y.ParameterType).SequenceEqual(types))
                 .Invoke(self.Inst(), args);
         }
 
         public static object Call(this object self, Type[] genericTypes, string methodName, params object[] args)
         {
-            return self.Type().GetMethod(methodName, FLAGS)
+            return self.Type().GetMethods(FLAGS)
+                .First(x => x.IsGenericMethodDefinition && x.Name == methodName)
                 .MakeGenericMethod(genericTypes)
                 .Invoke(self.Inst(), args);
         }
@@ -42,9 +45,10 @@ namespace Coffee.CSharpCompilerSettings
         public static object Get(this object self, string memberName, MemberInfo mi = null)
         {
             mi = mi ?? self.Type().GetMember(memberName, FLAGS)[0];
-            return mi is PropertyInfo
-                ? (mi as PropertyInfo).GetValue(self.Inst(), new object[0])
-                : (mi as FieldInfo).GetValue(self.Inst());
+            if (mi is PropertyInfo)
+                return (mi as PropertyInfo).GetValue(self.Inst(), new object[0]);
+            else
+                return (mi as FieldInfo).GetValue(self.Inst());
         }
 
         public static void Set(this object self, string memberName, object value, MemberInfo mi = null)

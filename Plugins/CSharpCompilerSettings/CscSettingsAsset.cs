@@ -192,6 +192,11 @@ namespace Coffee.CSharpCompilerSettings
             }
         }
 
+        public bool IsSupportNullable
+        {
+            get { return LVersion.CSharp8 < m_LanguageVersion; }
+        }
+
         public static CscSettingsAsset GetAtPath(string path)
         {
             try
