@@ -1,12 +1,12 @@
 {
     "name": "CSharpCompilerSettingsTests",
-    "rootNamespace": "",
     "references": [
         "CSharpCompilerSettings_",
         "CSharpCompilerSettings.Editor",
-        "CSharpCompilerSettings.Dev",
-        "UnityEngine.TestRunner",
-        "UnityEditor.TestRunner"
+        "CSharpCompilerSettings.Dev"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
     ],
     "includePlatforms": [
         "Editor"
@@ -14,14 +14,9 @@
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": true,
-    "precompiledReferences": [
-        "nunit.framework.dll"
-    ],
+    "precompiledReferences": [],
     "autoReferenced": false,
     "defineConstraints": [
-        "CSC_SETTINGS_DEVELOP",
-        "UNITY_INCLUDE_TESTS"
-    ],
-    "versionDefines": [],
-    "noEngineReferences": false
+        "CSC_SETTINGS_DEVELOP"
+    ]
 }

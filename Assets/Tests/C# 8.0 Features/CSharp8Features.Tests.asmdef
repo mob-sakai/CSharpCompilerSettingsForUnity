@@ -4,7 +4,9 @@
     "optionalUnityReferences": [
         "TestAssemblies"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": true,
@@ -16,8 +18,6 @@
         "System.Runtime.CompilerServices.Unsafe.dll",
         "System.Buffers.dll"
     ],
-    "autoReferenced": true,
-    "defineConstraints": [
-        "CSHARP_8_OR_NEWER"
-    ]
+    "autoReferenced": false,
+    "defineConstraints": []
 }

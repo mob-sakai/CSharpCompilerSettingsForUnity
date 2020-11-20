@@ -1,19 +1,19 @@
 {
     "m_Version": 140,
-    "m_CompilerType": 0,
-    "m_LanguageVersion": 2147483646,
+    "m_CompilerType": 1,
+    "m_LanguageVersion": 900,
     "m_EnableLogging": true,
-    "m_Nullable": 3,
+    "m_Nullable": 0,
     "m_CompilerPackage": {
         "m_Name": "Microsoft.Net.Compilers.Toolset",
-        "m_Version": "3.5.0",
+        "m_Version": "3.8.0",
         "m_Category": 0
     },
     "m_AnalyzerPackages": [
         {
             "m_Name": "ErrorProne.NET.CoreAnalyzers",
             "m_Version": "0.1.2",
-            "m_Category": 0
+            "m_Category": 1
         }
     ],
     "m_AnalyzerFilter": {
@@ -25,9 +25,9 @@
         ]
     },
     "m_SymbolModifier": [],
-    "m_UseDefaultCompiler": true,
+    "m_UseDefaultCompiler": false,
     "m_PackageName": "Microsoft.Net.Compilers.Toolset",
-    "m_PackageVersion": "3.5.0",
-    "m_EnableNullable": true,
+    "m_PackageVersion": "3.8.0",
+    "m_EnableNullable": false,
     "m_ModifySymbols": ""
 }

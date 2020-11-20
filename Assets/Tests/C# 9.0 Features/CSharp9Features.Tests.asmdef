@@ -4,13 +4,13 @@
     "optionalUnityReferences": [
         "TestAssemblies"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": true,
     "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [
-        "CSHARP_9_OR_NEWER"
-    ]
+    "autoReferenced": false,
+    "defineConstraints": []
 }

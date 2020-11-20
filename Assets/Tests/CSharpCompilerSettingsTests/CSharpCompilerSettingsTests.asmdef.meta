@@ -2,7 +2,7 @@ fileFormatVersion: 2
 guid: d24fb9bc80cd54134af95db1ebe9081f
 AssemblyDefinitionImporter:
   externalObjects: {}
-  userData: '{"m_Version":140,"m_CompilerType":0,"m_LanguageVersion":2147483647,"m_EnableLogging":false,"m_Nullable":0,"m_CompilerPackage":{"m_Name":"Microsoft.Net.Compilers","m_Version":"3.5.0","m_Category":0},"m_AnalyzerPackages":[],"m_AnalyzerFilter":{"m_PredefinedAssemblies":true,"m_IncludedAssemblies":["Assets/","!Assets/Standard
-    Assets/","!Packages/"]},"m_SymbolModifier":["ADD_SYMBOL","!UNITY_5_3_OR_NEWER"],"m_UseDefaultCompiler":true,"m_PackageName":"Microsoft.Net.Compilers","m_PackageVersion":"3.5.0","m_EnableNullable":false,"m_ModifySymbols":"ADD_SYMBOL;!UNITY_5_3_OR_NEWER"}'
+  userData: '{"m_Version":140,"m_CompilerType":1,"m_LanguageVersion":2147483647,"m_EnableLogging":false,"m_Nullable":0,"m_CompilerPackage":{"m_Name":"Microsoft.Net.Compilers","m_Version":"3.5.0","m_Category":0},"m_AnalyzerPackages":[],"m_AnalyzerFilter":{"m_PredefinedAssemblies":true,"m_IncludedAssemblies":["Assets/","!Assets/Standard
+    Assets/","!Packages/"]},"m_SymbolModifier":["ADD_SYMBOL","!UNITY_5_3_OR_NEWER"],"m_UseDefaultCompiler":false,"m_PackageName":"Microsoft.Net.Compilers","m_PackageVersion":"3.5.0","m_EnableNullable":false,"m_ModifySymbols":"ADD_SYMBOL;!UNITY_5_3_OR_NEWER"}'
   assetBundleName: 
   assetBundleVariant: 
