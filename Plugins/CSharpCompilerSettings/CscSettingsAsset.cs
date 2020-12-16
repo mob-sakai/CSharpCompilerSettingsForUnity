@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using LVersion = Coffee.CSharpCompilerSettings.CSharpLanguageVersion;
@@ -119,9 +120,9 @@ namespace Coffee.CSharpCompilerSettings
 
         private static CscSettingsAsset CreateFromProjectSettings()
         {
-            s_Instance = CreateInstance<CscSettingsAsset>();
-            if (File.Exists(k_SettingsPath))
-                JsonUtility.FromJsonOverwrite(File.ReadAllText(k_SettingsPath), s_Instance);
+            s_Instance = File.Exists(k_SettingsPath)
+                ? CreateFromJson(File.ReadAllText(k_SettingsPath))
+                : CreateInstance<CscSettingsAsset>();
             s_Instance.IsProjectSetting = true;
             return s_Instance;
         }
@@ -225,6 +226,27 @@ namespace Coffee.CSharpCompilerSettings
         {
             var setting = CreateInstance<CscSettingsAsset>();
             JsonUtility.FromJsonOverwrite(json, setting);
+
+            // In Unity 2020.2 or later, some fields will be not deserialized on first compilation.
+            var serializedJson = JsonUtility.ToJson(setting);
+            if (!serializedJson.Contains("\"m_CompilerPackage\":"))
+            {
+                var m = Regex.Match(json, "\"m_CompilerPackage\":\\s*({[^}]+})");
+                if (m.Success)
+                {
+                    setting.m_CompilerPackage = JsonUtility.FromJson<NugetPackage>(m.Groups[1].Value);
+                }
+            }
+
+            if (!serializedJson.Contains("\"m_CompilerFilter\":"))
+            {
+                var m = Regex.Match(json, "\"m_CompilerFilter\":\\s*({[^}]+})");
+                if (m.Success)
+                {
+                    setting.m_CompilerFilter = JsonUtility.FromJson<AssemblyFilter>(m.Groups[1].Value);
+                }
+            }
+
             return setting;
         }
 
