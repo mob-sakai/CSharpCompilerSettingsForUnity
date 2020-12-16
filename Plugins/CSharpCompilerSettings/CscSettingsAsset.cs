@@ -74,7 +74,7 @@ namespace Coffee.CSharpCompilerSettings
     }
 
     [Serializable]
-    public struct AnalyzerFilter
+    public struct AssemblyFilter
     {
         [Tooltip("Include predefined assemblies (e.g. Assembly-CSharp.dll)")] [SerializeField]
         private bool m_PredefinedAssemblies;
@@ -82,7 +82,7 @@ namespace Coffee.CSharpCompilerSettings
         [Tooltip("Include assemblies filter. Prefix '!' to exclude (e.g. 'Assets/;!Packages/')")] [SerializeField]
         private string[] m_IncludedAssemblies;
 
-        public AnalyzerFilter(bool predefinedAssemblies, string[] includedAssemblies)
+        public AssemblyFilter(bool predefinedAssemblies, string[] includedAssemblies)
         {
             m_PredefinedAssemblies = predefinedAssemblies;
             m_IncludedAssemblies = includedAssemblies;
@@ -106,8 +106,9 @@ namespace Coffee.CSharpCompilerSettings
         [SerializeField] private bool m_EnableLogging = false;
         [SerializeField] private Nullable m_Nullable = Nullable.Disable;
         [SerializeField] private NugetPackage m_CompilerPackage = new NugetPackage("Microsoft.Net.Compilers", "3.5.0", NugetPackage.CategoryType.Compiler);
+        [SerializeField] private AssemblyFilter m_CompilerFilter = new AssemblyFilter(true, new[] {"Assets/", "!Assets/Standard Assets/", "!Packages/"});
         [SerializeField] private NugetPackage[] m_AnalyzerPackages = new NugetPackage[0];
-        [SerializeField] private AnalyzerFilter m_AnalyzerFilter = new AnalyzerFilter(true, new[] {"Assets/", "!Assets/Standard Assets/", "!Packages/"});
+        [SerializeField] private AssemblyFilter m_AnalyzerFilter = new AssemblyFilter(true, new[] {"Assets/", "!Assets/Standard Assets/", "!Packages/"});
         [SerializeField] private string[] m_SymbolModifier = new string[0];
 
         [SerializeField] [Obsolete] private bool m_UseDefaultCompiler = true;
@@ -121,8 +122,11 @@ namespace Coffee.CSharpCompilerSettings
             s_Instance = CreateInstance<CscSettingsAsset>();
             if (File.Exists(k_SettingsPath))
                 JsonUtility.FromJsonOverwrite(File.ReadAllText(k_SettingsPath), s_Instance);
+            s_Instance.IsProjectSetting = true;
             return s_Instance;
         }
+
+        public bool IsProjectSetting { get; private set; }
 
         private static CscSettingsAsset s_Instance;
         public static CscSettingsAsset instance => s_Instance ? s_Instance : s_Instance = CreateFromProjectSettings();
@@ -134,16 +138,6 @@ namespace Coffee.CSharpCompilerSettings
         public bool UseDefaultCompiler
         {
             get { return m_CompilerType == CompilerType.BuiltIn || !m_CompilerPackage.IsValid; }
-        }
-
-        public bool ShouldToRecompile
-        {
-            get
-            {
-                if (0 < m_SymbolModifier.Length) return true;
-                if (m_CompilerType == CompilerType.CustomPackage && m_CompilerPackage.IsValid) return true;
-                return false;
-            }
         }
 
         public string LanguageVersion
@@ -164,32 +158,29 @@ namespace Coffee.CSharpCompilerSettings
             }
         }
 
-        public string AdditionalSymbols
+        public string GetSymbolModifier(string asmdefPath)
         {
-            get
+            var sb = new StringBuilder();
+            if (ShouldToUseCustomCompiler(asmdefPath))
             {
-                var sb = new StringBuilder();
-                if (!UseDefaultCompiler)
-                {
-                    var v = m_LanguageVersion;
-                    if (v == LVersion.Preview) v = LVersion.CSharp9;
-                    if (v == LVersion.Latest) v = LVersion.CSharp8;
+                var v = m_LanguageVersion;
+                if (v == LVersion.Preview) v = LVersion.CSharp9;
+                if (v == LVersion.Latest) v = LVersion.CSharp8;
 
-                    sb.Append(LVersion.CSharp7 <= v ? "CSHARP_7_OR_NEWER;" : "!CSHARP_7_OR_NEWER;");
-                    sb.Append(LVersion.CSharp7_1 <= v ? "CSHARP_7_1_OR_NEWER;" : "!CSHARP_7_1_OR_NEWER;");
-                    sb.Append(LVersion.CSharp7_2 <= v ? "CSHARP_7_2_OR_NEWER;" : "!CSHARP_7_2_OR_NEWER;");
-                    sb.Append(LVersion.CSharp7_3 <= v ? "CSHARP_7_3_OR_NEWER;" : "!CSHARP_7_3_OR_NEWER;");
-                    sb.Append(LVersion.CSharp8 <= v ? "CSHARP_8_OR_NEWER;" : "!CSHARP_8_OR_NEWER;");
-                    sb.Append(LVersion.CSharp9 <= v ? "CSHARP_9_OR_NEWER;" : "!CSHARP_9_OR_NEWER;");
-                }
-
-                if (0 < m_SymbolModifier.Length)
-                {
-                    sb.Append(m_SymbolModifier.Aggregate((a, b) => a + ";" + b));
-                }
-
-                return sb.ToString();
+                sb.Append(LVersion.CSharp7 <= v ? "CSHARP_7_OR_NEWER;" : "!CSHARP_7_OR_NEWER;");
+                sb.Append(LVersion.CSharp7_1 <= v ? "CSHARP_7_1_OR_NEWER;" : "!CSHARP_7_1_OR_NEWER;");
+                sb.Append(LVersion.CSharp7_2 <= v ? "CSHARP_7_2_OR_NEWER;" : "!CSHARP_7_2_OR_NEWER;");
+                sb.Append(LVersion.CSharp7_3 <= v ? "CSHARP_7_3_OR_NEWER;" : "!CSHARP_7_3_OR_NEWER;");
+                sb.Append(LVersion.CSharp8 <= v ? "CSHARP_8_OR_NEWER;" : "!CSHARP_8_OR_NEWER;");
+                sb.Append(LVersion.CSharp9 <= v ? "CSHARP_9_OR_NEWER;" : "!CSHARP_9_OR_NEWER;");
             }
+
+            if (!IsProjectSetting && 0 < m_SymbolModifier.Length)
+            {
+                sb.Append(m_SymbolModifier.Aggregate((a, b) => a + ";" + b));
+            }
+
+            return sb.ToString();
         }
 
         public bool IsSupportNullable
@@ -211,7 +202,21 @@ namespace Coffee.CSharpCompilerSettings
             }
         }
 
-        public bool ShouldToRecompileToAnalyze(string asmdefPath)
+        public bool ShouldToRecompile(string asmdefPath)
+        {
+            return 0 < GetSymbolModifier(asmdefPath).Length
+                   || ShouldToUseCustomCompiler(asmdefPath)
+                   || ShouldToUseAnalyzer(asmdefPath);
+        }
+
+        public bool ShouldToUseCustomCompiler(string asmdefPath)
+        {
+            return m_CompilerType == CompilerType.CustomPackage
+                   && m_CompilerPackage.IsValid
+                   && (!IsProjectSetting || m_CompilerFilter.IsValid(asmdefPath));
+        }
+
+        public bool ShouldToUseAnalyzer(string asmdefPath)
         {
             return m_AnalyzerPackages.Any(x => x.IsValid) && m_AnalyzerFilter.IsValid(asmdefPath);
         }

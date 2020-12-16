@@ -20,29 +20,31 @@ namespace Coffee.CSharpCompilerSettings
 
             // Modify define symbols.
             var defines = Regex.Match(content, "<DefineConstants>(.*)</DefineConstants>").Groups[1].Value.Split(';', ',');
-            defines = Utils.ModifySymbols(defines, setting.AdditionalSymbols);
+            defines = Utils.ModifySymbols(defines, setting.GetSymbolModifier(asmdefPath));
             var defineText = string.Join(";", defines);
             content = Regex.Replace(content, "<DefineConstants>(.*)</DefineConstants>", string.Format("<DefineConstants>{0}</DefineConstants>", defineText), RegexOptions.Multiline);
 
-            if (!setting.UseDefaultCompiler)
+            if (setting.ShouldToUseCustomCompiler(asmdefPath))
             {
                 // Language version.
                 content = Regex.Replace(content, "<LangVersion>.*</LangVersion>", "<LangVersion>" + setting.LanguageVersion + "</LangVersion>", RegexOptions.Multiline);
-            }
 
-            // Nullable.
-            var value = setting.Nullable.ToString().ToLower();
-            if (Regex.IsMatch(content, "<Nullable>.*</Nullable>"))
-            {
-                content = Regex.Replace(content, "<Nullable>.*</Nullable>", "<Nullable>" + value + "</Nullable>");
-            }
-            else
-            {
-                content = Regex.Replace(content, "(\\s+)(<LangVersion>.*</LangVersion>)([\r\n]+)", "$1$2$3$1<Nullable>" + value + "</Nullable>$3");
+                // Nullable.
+                if (!setting.IsSupportNullable)
+                {
+                    var value = setting.Nullable.ToString().ToLower();
+                    if (Regex.IsMatch(content, "<Nullable>.*</Nullable>"))
+                    {
+                        content = Regex.Replace(content, "<Nullable>.*</Nullable>", "<Nullable>" + value + "</Nullable>");
+                    }
+                    else
+                    {
+                        content = Regex.Replace(content, "(\\s+)(<LangVersion>.*</LangVersion>)([\r\n]+)", "$1$2$3$1<Nullable>" + value + "</Nullable>$3");
+                    }
+                }
             }
 
             // Additional contents.
-            // content = Regex.Replace(content, "^</Project>", "<!-- C# Settings For Unity -->", RegexOptions.Singleline);
             content = Regex.Replace(content, "[\r\n]+</Project>[\r\n]*", "\r\n<!-- C# Settings For Unity -->");
             {
                 content += NewLine + "  <ItemGroup>";

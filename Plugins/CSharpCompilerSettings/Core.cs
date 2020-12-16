@@ -84,35 +84,38 @@ namespace Coffee.CSharpCompilerSettings
             text = Regex.Replace(text, "[\r\n]+", "\n");
             text = Regex.Replace(text, "^-", "/");
             text = Regex.Replace(text, "\n/debug\n", "\n/debug:portable\n");
-            text = Regex.Replace(text, "\n/nullable.*", "");
             text += "\n/preferreduilang:en-US";
 
-            // Compiler
-            if (!setting.UseDefaultCompiler)
+            // Custom compiler.
+            if (setting.ShouldToUseCustomCompiler(asmdefPath))
             {
                 // Change language version.
                 text = Regex.Replace(text, "\n/langversion:[^\n]+\n", "\n/langversion:" + setting.LanguageVersion + "\n");
 
                 // Nullable.
+                text = Regex.Replace(text, "\n/nullable.*", "");
                 if (setting.IsSupportNullable)
+                {
                     text += "\n/nullable:" + setting.Nullable.ToString().ToLower();
+                }
             }
 
             // Modify scripting define symbols.
-            if (!string.IsNullOrEmpty(setting.AdditionalSymbols))
+            var symbolModifier = setting.GetSymbolModifier(asmdefPath);
+            if (!string.IsNullOrEmpty(symbolModifier))
             {
                 var defines = Regex.Matches(text, "^/define:(.*)$", RegexOptions.Multiline)
                     .Cast<Match>()
                     .Select(x => x.Groups[1].Value);
                 text = Regex.Replace(text, "[\r\n]+/define:[^\r\n]+", "");
-                var modifiedDefines = Utils.ModifySymbols(defines, setting.AdditionalSymbols);
+                var modifiedDefines = Utils.ModifySymbols(defines, symbolModifier);
                 foreach (var d in modifiedDefines)
                     text += "\n/define:" + d;
             }
 
             // Analyzer.
             var globalSettings = CscSettingsAsset.instance;
-            if (globalSettings.ShouldToRecompileToAnalyze(asmdefPath))
+            if (globalSettings.ShouldToUseAnalyzer(asmdefPath))
             {
                 // Analyzer dlls.
                 foreach (var package in globalSettings.AnalyzerPackages)
@@ -175,8 +178,8 @@ namespace Coffee.CSharpCompilerSettings
             // Response file.
             var responseFile = Regex.Replace(psi.Arguments, "^.*@(.+)$", "$1");
 
-            // Compiler
-            if (!setting.UseDefaultCompiler)
+            // Change to custom compiler.
+            if (setting.ShouldToUseCustomCompiler(asmdefPath))
             {
                 var compilerInfo = CompilerInfo.GetInstalledInfo(setting.CompilerPackage.PackageId);
 
@@ -247,7 +250,7 @@ namespace Coffee.CSharpCompilerSettings
 
                 var globalSettings = CscSettingsAsset.instance;
                 var settings = GetSettings();
-                if (!settings.ShouldToRecompile && !globalSettings.ShouldToRecompileToAnalyze(asmdefPath))
+                if (!globalSettings.ShouldToRecompile(asmdefPath))
                 {
                     Logger.LogWarning("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> does not need to be recompiled.</color>", assemblyName);
                     return;

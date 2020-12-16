@@ -140,12 +140,13 @@ namespace Coffee.CSharpCompilerSettings
             EditorGUILayout.EndVertical();
         }
 
-        public static void DrawCompilerPackage(SerializedObject so)
+        public static bool DrawCompilerPackage(SerializedObject so)
         {
             var spCompilerType = so.FindProperty("m_CompilerType");
             EditorGUILayout.PropertyField(spCompilerType);
 
-            if (spCompilerType.intValue == (int) CompilerType.CustomPackage)
+            bool isCustomPackage = spCompilerType.intValue == (int) CompilerType.CustomPackage;
+            if (isCustomPackage)
             {
                 EditorGUI.indentLevel++;
                 NugetPackageCatalog.CurrentCategory = NugetPackage.CategoryType.Compiler;
@@ -154,6 +155,8 @@ namespace Coffee.CSharpCompilerSettings
                 EditorGUILayout.PropertyField(so.FindProperty("m_Nullable"));
                 EditorGUI.indentLevel--;
             }
+
+            return isCustomPackage;
         }
 
         public static void DrawControl(bool changed, Action onRevert = null, Action onApply = null, Action onReload = null, Action onPublish = null)
