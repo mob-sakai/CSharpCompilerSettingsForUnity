@@ -39,18 +39,6 @@ public class CoreTests : IPrebuildSetup, IPostBuildCleanup
         Assert.AreEqual(expected, actual);
     }
 
-    [Test]
-    public void DirtyScriptsIfNeeded()
-    {
-        Core.DirtyScriptsIfNeeded();
-    }
-
-    [Test]
-    public void Initialize()
-    {
-        Core.Initialize();
-    }
-
     [TestCase("Temp/CSharpCompilerSettings_.dll", "Assembly <b>'CSharpCompilerSettings_'</b> requires default csc.")]
     public void OnAssemblyCompilationStarted(string outpath, string log)
     {
@@ -67,11 +55,17 @@ public class CoreTests : IPrebuildSetup, IPostBuildCleanup
     }
 
     [Test]
-    public void GetSettings()
+    public void GetSettings_EnableDebugLog()
     {
         var settings = Core.GetSettings();
-        Assert.AreEqual(true, settings.EnableDebugLog);
-        Assert.AreEqual(true, settings.ShouldToRecompileToAnalyze(null));
+        Assert.AreEqual(false, settings.EnableDebugLog);
+    }
+
+    [Test]
+    public void GetSettings_ShouldToUseAnalyzer()
+    {
+        var settings = Core.GetSettings();
+        Assert.AreEqual(false, settings.ShouldToUseAnalyzer("Assets/test.asmdef"));
     }
 
     [Test]

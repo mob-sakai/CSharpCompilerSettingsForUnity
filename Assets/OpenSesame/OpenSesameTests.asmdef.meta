@@ -1,8 +1,0 @@
-fileFormatVersion: 2
-guid: 78178f40816124d388a2f0bac68139d8
-AssemblyDefinitionImporter:
-  externalObjects: {}
-  userData: '{"m_Version":140,"m_CompilerType":1,"m_LanguageVersion":800,"m_EnableLogging":false,"m_Nullable":0,"m_CompilerPackage":{"m_Name":"OpenSesame.Net.Compilers","m_Version":"3.7.0","m_Category":0},"m_AnalyzerPackages":[],"m_AnalyzerFilter":{"m_PredefinedAssemblies":true,"m_IncludedAssemblies":["Assets/","!Assets/Standard
-    Assets/","!Packages/"]},"m_SymbolModifier":["IGNORE_ACCESSIBILITY"],"m_UseDefaultCompiler":false,"m_PackageName":"OpenSesame.Net.Compilers","m_PackageVersion":"3.7.0","m_EnableNullable":false,"m_ModifySymbols":"IGNORE_ACCESSIBILITY"}'
-  assetBundleName: 
-  assetBundleVariant: 

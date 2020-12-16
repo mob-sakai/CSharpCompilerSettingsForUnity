@@ -258,9 +258,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 1909054451}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 798d1c00efe604117879e0c41f3e1910, type: 3}
+  m_Script: {fileID: 11500000, guid: 27d0c33e23e544ffe82ba1d0a4229bf9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_Text: {fileID: 1909054454}
 --- !u!114 &1909054454
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -274,8 +275,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
-  m_RaycastTarget: 1
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 0
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
@@ -283,7 +284,7 @@ MonoBehaviour:
     m_Font: {fileID: 10102, guid: 0000000000000000e000000000000000, type: 0}
     m_FontSize: 14
     m_FontStyle: 0
-    m_BestFit: 1
+    m_BestFit: 0
     m_MinSize: 10
     m_MaxSize: 40
     m_Alignment: 4
@@ -292,7 +293,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: New Text
+  m_Text: NG
 --- !u!222 &1909054455
 CanvasRenderer:
   m_ObjectHideFlags: 0

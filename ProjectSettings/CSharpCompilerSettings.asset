@@ -9,6 +9,14 @@
         "m_Version": "3.8.0",
         "m_Category": 0
     },
+    "m_CompilerFilter": {
+        "m_PredefinedAssemblies": true,
+        "m_IncludedAssemblies": [
+            "Assets/",
+            "!Assets/Standard Assets/",
+            "!Packages/"
+        ]
+    },
     "m_AnalyzerPackages": [
         {
             "m_Name": "ErrorProne.NET.CoreAnalyzers",
