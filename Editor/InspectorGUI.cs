@@ -114,7 +114,6 @@ namespace Coffee.CSharpCompilerSettings
                 onRevert: () => _assetPath = null,
                 onApply: () =>
                 {
-                    _assetPath = null;
                     _serializedObject.ApplyModifiedProperties();
                     importer.userData = JsonUtility.ToJson(_serializedObject.targetObject);
                     importer.SaveAndReimport();
