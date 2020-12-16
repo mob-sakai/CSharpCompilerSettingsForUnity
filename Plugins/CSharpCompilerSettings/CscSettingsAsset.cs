@@ -77,10 +77,10 @@ namespace Coffee.CSharpCompilerSettings
     [Serializable]
     public struct AssemblyFilter
     {
-        [Tooltip("Include predefined assemblies (e.g. Assembly-CSharp.dll)")] [SerializeField]
+        [Tooltip("Include predefined assemblies (Assembly-CSharp-firstpass.dll, Assembly-CSharp-Editor-firstpass.dll, Assembly-CSharp.dll and Assembly-CSharp-Editor.dll)")] [SerializeField]
         private bool m_PredefinedAssemblies;
 
-        [Tooltip("Include assemblies filter. Prefix '!' to exclude (e.g. 'Assets/;!Packages/')")] [SerializeField]
+        [Tooltip("Assemblies filter. Prefix '!' to exclude. (e.g. 'Assets/', '!Packages/')")] [SerializeField]
         private string[] m_IncludedAssemblies;
 
         public AssemblyFilter(bool predefinedAssemblies, string[] includedAssemblies)

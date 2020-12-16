@@ -15,7 +15,7 @@ namespace Coffee.CSharpCompilerSettings
     [InitializeOnLoad]
     internal static class Core
     {
-        public static bool IsGlobal { get; private set; }
+        private static bool IsGlobal { get; }
 
         public static void DirtyScriptsIfNeeded()
         {
@@ -266,13 +266,12 @@ namespace Coffee.CSharpCompilerSettings
             }
         }
 
-        public static void Initialize()
+        static Core()
         {
-            IsGlobal = new[]
-            {
-                "CSharpCompilerSettings",
-                "CSharpCompilerSettings_",
-            }.Contains(typeof(Core).Assembly.GetName().Name);
+            var coreAssemblyName = typeof(Core).Assembly.GetName().Name;
+            if (coreAssemblyName == "CSharpCompilerSettings_") return;
+
+            IsGlobal = coreAssemblyName == "CSharpCompilerSettings";
 
             // Setup logger.
             if (IsGlobal)
@@ -331,11 +330,6 @@ namespace Coffee.CSharpCompilerSettings
             var minor = int.Parse(version[1]);
             if (2021 <= major || (major == 2020 && 2 <= minor))
                 DirtyScriptsIfNeeded();
-        }
-
-        static Core()
-        {
-            Initialize();
         }
     }
 }
