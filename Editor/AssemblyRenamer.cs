@@ -32,14 +32,14 @@ namespace Coffee.CSharpCompilerSettings
             }
 
             // Start compilation process.
-            Logger.LogDebug("Rename: Change assembly name\n  command={0} {1}\n", psi.FileName, psi.Arguments);
+            Logger.LogDebug("Rename: Change assembly name ({0})\n  command={1} {2}\n", assemblyName, psi.FileName, psi.Arguments);
             var p = Process.Start(psi);
             p.Exited += (_, __) =>
             {
                 if (p.ExitCode == 0)
-                    Logger.LogDebug("Rename: success.\n{0}", p.StandardOutput.ReadToEnd());
+                    Logger.LogDebug("Rename: success ({0})\n{1}", assemblyName, p.StandardOutput.ReadToEnd());
                 else
-                    Logger.LogException("Rename: failure.\n{0}\n\n{1}", p.StandardError.ReadToEnd(), p.StandardOutput.ReadToEnd());
+                    Logger.LogException("Rename: failure ({0})\n{1}\n\n{2}", assemblyName, p.StandardError.ReadToEnd(), p.StandardOutput.ReadToEnd());
             };
             p.EnableRaisingEvents = true;
 

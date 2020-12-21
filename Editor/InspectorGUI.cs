@@ -189,7 +189,7 @@ namespace Coffee.CSharpCompilerSettings
         /// </summary>
         /// <param name="asmdefPath">Path of the asmdef</param>
         /// <param name="enabled">Condition</param>
-        private static void EnablePortableDll(string asmdefPath, bool enabled)
+        public static void EnablePortableDll(string asmdefPath, bool enabled)
         {
             if (enabled)
             {
