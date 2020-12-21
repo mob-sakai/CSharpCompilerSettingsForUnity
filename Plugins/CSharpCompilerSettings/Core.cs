@@ -17,18 +17,6 @@ namespace Coffee.CSharpCompilerSettings
     {
         private static bool IsGlobal { get; }
 
-        public static void DirtyScriptsIfNeeded()
-        {
-            var assemblyName = GetAssemblyName(FindAsmdef());
-            if (!IsGlobal && string.IsNullOrEmpty(assemblyName)) return;
-
-            var filepath = "Temp/" + typeof(Core).Assembly.GetName().Name + ".loaded";
-            if (File.Exists(filepath)) return;
-            File.WriteAllText(filepath, "");
-
-            Utils.RequestCompilation(IsGlobal ? null : assemblyName);
-        }
-
         public static string GetAssemblyName(string asmdefPath)
         {
             if (string.IsNullOrEmpty(asmdefPath)) return null;
@@ -268,6 +256,7 @@ namespace Coffee.CSharpCompilerSettings
 
         static Core()
         {
+            // For development assemblies: Do nothing.
             var coreAssemblyName = typeof(Core).Assembly.GetName().Name;
             if (coreAssemblyName == "CSharpCompilerSettings_") return;
 
@@ -315,21 +304,15 @@ namespace Coffee.CSharpCompilerSettings
             CompilationPipeline.assemblyCompilationStarted -= OnAssemblyCompilationStarted;
             CompilationPipeline.assemblyCompilationStarted += OnAssemblyCompilationStarted;
 
-            // Install custom csc before compilation.
+            // Install custom compiler package before compilation.
             var settings = GetSettings();
             if (!settings.UseDefaultCompiler)
                 CompilerInfo.GetInstalledInfo(settings.CompilerPackage.PackageId);
 
+            // Install analyzer packages before compilation.
             if (IsGlobal)
                 foreach (var package in settings.AnalyzerPackages.Where(x => x.IsValid))
                     AnalyzerInfo.GetInstalledInfo(package.PackageId);
-
-            // If Unity 2020.2 or newer, request re-compilation.
-            var version = Application.unityVersion.Split('.');
-            var major = int.Parse(version[0]);
-            var minor = int.Parse(version[1]);
-            if (2021 <= major || (major == 2020 && 2 <= minor))
-                DirtyScriptsIfNeeded();
         }
     }
 }
