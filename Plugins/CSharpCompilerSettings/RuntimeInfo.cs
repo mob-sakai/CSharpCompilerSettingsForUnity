@@ -18,7 +18,7 @@ namespace Coffee.CSharpCompilerSettings
         public static RuntimeInfo GetInstalledDotnetInfo(string version)
         {
             var packageId = "dotnet-runtime-" + version;
-            var url = GetDotnetDownloadUrl(version);
+            var url = GetDotnetDownloadUrl(version, Application.platform);
             var installPath = Utils.InstallPackage(packageId, url);
             if (string.IsNullOrEmpty(installPath)) return new RuntimeInfo(packageId, "");
 
@@ -28,12 +28,12 @@ namespace Coffee.CSharpCompilerSettings
             return new RuntimeInfo(packageId, dotnetPath);
         }
 
-        private static string GetDotnetDownloadUrl(string version)
+        public static string GetDotnetDownloadUrl(string version, RuntimePlatform platform)
         {
             const string pattern = "https://dotnetcli.azureedge.net/dotnet/Runtime/{0}/dotnet-runtime-{0}-{1}-x64.{2}";
 
             // todo: replace hardcoded 3.1.8 with maximum available version
-            switch (Application.platform)
+            switch (platform)
             {
                 case RuntimePlatform.WindowsEditor:
                     return string.Format(pattern, version, "win", "zip");

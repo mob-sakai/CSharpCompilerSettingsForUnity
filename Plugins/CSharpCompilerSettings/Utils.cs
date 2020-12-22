@@ -54,6 +54,8 @@ namespace Coffee.CSharpCompilerSettings
             }
 
             var allScripts = editorCompilation.Get("allScripts") as Dictionary<string, string>;
+            if (allScripts == null) return;
+
             var assemblyFilename = assemblyName + ".dll";
             var path = allScripts.FirstOrDefault(x => x.Value == assemblyFilename).Key;
             if (string.IsNullOrEmpty(path)) return;
@@ -155,58 +157,64 @@ namespace Coffee.CSharpCompilerSettings
             {
                 ServicePointManager.ServerCertificateValidationCallback = cb;
 
-                Logger.LogInfo("Download {0} (alternative)", url);
-
                 // NOTE: In .Net Framework 3.5, TSL1.2 is not supported.
                 // So, download the file on command line instead.
-                switch (Application.platform)
-                {
-                    case RuntimePlatform.WindowsEditor:
-                        ExecuteCommand("PowerShell.exe", string.Format("curl -O {0} {1}", downloadPath, url));
-                        break;
-                    case RuntimePlatform.OSXEditor:
-                        ExecuteCommand("curl", string.Format("-o {0} -L {1}", downloadPath, url));
-                        break;
-                    case RuntimePlatform.LinuxEditor:
-                        ExecuteCommand("wget", string.Format("-O {0} {1}", downloadPath, url));
-                        break;
-                }
+                Logger.LogInfo("Download {0} (alternative)", url);
+                var args = GetDownloadCommand(url, downloadPath, Application.platform);
+                ExecuteCommand(args[0], args[1]);
             }
 
             return downloadPath;
         }
 
-        /// <summary>
-        /// Extract archive file.
-        /// </summary>
-        /// <param name="archivePath">Archive file path</param>
-        /// <param name="extractTo">Extraction path</param>
+        public static string[] GetDownloadCommand(string url, string downloadPath, RuntimePlatform platform)
+        {
+            switch (platform)
+            {
+                case RuntimePlatform.WindowsEditor:
+                    return new []{"PowerShell.exe", string.Format("curl -O {0} {1}", downloadPath, url)};
+                case RuntimePlatform.OSXEditor:
+                    return new []{"curl", string.Format("-o {0} -L {1}", downloadPath, url)};
+                case RuntimePlatform.LinuxEditor:
+                    return new []{"wget", string.Format("-O {0} {1}", downloadPath, url)};
+
+                default:
+                    throw new NotSupportedException($"{Application.platform} is not supported");
+            }
+        }
+
+        // Extract archive file.
         public static void ExtractArchive(string archivePath, string extractTo)
         {
             Logger.LogInfo("Extract archive {0} to {1}", archivePath, extractTo);
+            var args = GetExtractArchiveCommand(archivePath, extractTo, Application.platform);
+            ExecuteCommand(args[0], args[1]);
+        }
+
+        public static string[] GetExtractArchiveCommand(string archivePath, string extractTo, RuntimePlatform platform)
+        {
             var contentsPath = EditorApplication.applicationContentsPath;
-            var args = string.Format("x {0} -o{1}", archivePath, extractTo);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(extractTo));
-
-            switch (Application.platform)
+            switch (platform)
             {
                 case RuntimePlatform.WindowsEditor:
-                    ExecuteCommand(PathCombine(contentsPath, "Tools", "7z.exe"), args);
-                    break;
+                    Directory.CreateDirectory(Path.GetDirectoryName(extractTo));
+                    return new[] {PathCombine(contentsPath, "Tools", "7z.exe"), string.Format("x {0} -o{1}", archivePath, extractTo)};
                 case RuntimePlatform.OSXEditor:
                 case RuntimePlatform.LinuxEditor:
                     if (archivePath.EndsWith("tar.gz"))
                     {
-                        // 7za doesn't preserve permission but tar does
                         Directory.CreateDirectory(extractTo);
-                        ExecuteCommand("tar", string.Format("-pzxf {0} -C {1}", archivePath, extractTo));
+                        return new[] {"tar", string.Format("-pzxf {0} -C {1}", archivePath, extractTo)};
                     }
                     else
-                        ExecuteCommand(PathCombine(contentsPath, "Tools", "7za"), args);
-
-                    break;
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(extractTo));
+                        return new[] {PathCombine(contentsPath, "Tools", "7za"), string.Format("x {0} -o{1}", archivePath, extractTo)};
+                    }
+                default:
+                    throw new NotSupportedException($"{Application.platform} is not supported");
             }
+
         }
 
         /// <summary>

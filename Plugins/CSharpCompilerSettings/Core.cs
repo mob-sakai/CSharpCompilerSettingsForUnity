@@ -12,10 +12,9 @@ using Assembly = System.Reflection.Assembly;
 
 namespace Coffee.CSharpCompilerSettings
 {
-    [InitializeOnLoad]
     internal static class Core
     {
-        private static bool IsGlobal { get; }
+        private static bool IsGlobal { get; set; }
 
         public static string GetAssemblyName(string asmdefPath)
         {
@@ -142,6 +141,9 @@ namespace Coffee.CSharpCompilerSettings
 
         private static void ChangeCompilerProcess(object compiler, object scriptAssembly, CscSettingsAsset setting)
         {
+            if (IsDevelopAssembly)
+                return;
+
             var tProgram = Type.GetType("UnityEditor.Utils.Program, UnityEditor");
             var tScriptCompilerBase = Type.GetType("UnityEditor.Scripting.Compilers.ScriptCompilerBase, UnityEditor");
             var fiProcess = tScriptCompilerBase.GetField("process", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -183,7 +185,7 @@ namespace Coffee.CSharpCompilerSettings
                 }
 
                 // Change exe file path.
-                compilerInfo.Setup(psi, responseFile);
+                compilerInfo.Setup(psi, responseFile, Application.platform);
             }
 
             // Modify response file.
@@ -254,13 +256,15 @@ namespace Coffee.CSharpCompilerSettings
             }
         }
 
-        static Core()
+        static bool IsDevelopAssembly
         {
-            // For development assemblies: Do nothing.
-            var coreAssemblyName = typeof(Core).Assembly.GetName().Name;
-            if (coreAssemblyName == "CSharpCompilerSettings_") return;
+            get { return typeof(Core).Assembly.GetName().Name == "CSharpCompilerSettings_"; }
+        }
 
-            IsGlobal = coreAssemblyName == "CSharpCompilerSettings";
+        [InitializeOnLoadMethod]
+        public static void Initialize()
+        {
+            IsGlobal = typeof(Core).Assembly.GetName().Name == "CSharpCompilerSettings" || IsDevelopAssembly;
 
             // Setup logger.
             if (IsGlobal)

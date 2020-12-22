@@ -15,7 +15,7 @@ namespace Coffee.CSharpCompilerSettings
             get { return !string.IsNullOrEmpty(Path) && !string.IsNullOrEmpty(RuntimePath); }
         }
 
-        private CompilerInfo(string packageId, string path, string runtimePath)
+        public CompilerInfo(string packageId, string path, string runtimePath)
         {
             PackageId = packageId;
             Path = path;
@@ -44,9 +44,9 @@ namespace Coffee.CSharpCompilerSettings
             return new CompilerInfo(packageId, "", "");
         }
 
-        public void Setup(ProcessStartInfo psi, string responseFile)
+        public void Setup(ProcessStartInfo psi, string responseFile, RuntimePlatform platform)
         {
-            if (Application.platform == RuntimePlatform.WindowsEditor
+            if (platform == RuntimePlatform.WindowsEditor
                 && Path.EndsWith(".exe"))
             {
                 psi.FileName = System.IO.Path.GetFullPath(Path);
