@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections;
+using System.IO;
 using System.Text.RegularExpressions;
 using Coffee.CSharpCompilerSettings;
 using NUnit.Framework;
@@ -19,6 +20,18 @@ public class CoreTests : IPrebuildSetup, IPostBuildCleanup
     public void Cleanup()
     {
         Utils.DisableCompilation = false;
+    }
+
+    [Test]
+    public void RequestCompilation()
+    {
+        Utils.RequestCompilation("CSharpCompilerSettingsTests");
+    }
+
+    [Test]
+    public void Initialize()
+    {
+        Core.Initialize();
     }
 
     [Test]
@@ -58,14 +71,14 @@ public class CoreTests : IPrebuildSetup, IPostBuildCleanup
     public void GetSettings_EnableDebugLog()
     {
         var settings = Core.GetSettings();
-        Assert.AreEqual(false, settings.EnableDebugLog);
+        Assert.AreEqual(true, settings.EnableDebugLog);
     }
 
     [Test]
     public void GetSettings_ShouldToUseAnalyzer()
     {
         var settings = Core.GetSettings();
-        Assert.AreEqual(false, settings.ShouldToUseAnalyzer("Assets/test.asmdef"));
+        Assert.AreEqual(true, settings.ShouldToUseAnalyzer("Assets/test.asmdef"));
     }
 
     [Test]
