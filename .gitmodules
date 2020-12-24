@@ -1,4 +1,3 @@
 [submodule "Packages/dev"]
 	path = Packages/dev
-	url = ./
-	branch = upm
+	url = https://github.com/mob-sakai/CSharpCompilerSettingsForUnity.git
