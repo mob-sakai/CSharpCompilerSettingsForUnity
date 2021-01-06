@@ -1,3 +1,23 @@
+# [1.4.0](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/1.3.0...1.4.0) (2021-01-06)
+
+
+### Bug Fixes
+
+* in 2020.2 or later, no need to recompile ([f815cf2](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/f815cf2c7c270afca6bca019d0fc6eb42b4c4348))
+* in Unity 2020.2 or later, some fields in CscSettingsAsset will be not deserialized on first compilation ([1858247](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/18582475232a2d9dbc455dab89c5b7b374f7d110))
+* nullable is supported in C[#8](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/8).0 or later ([f16985b](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/f16985b7aaf6017740a9e5449d23402894616059))
+* when enabling C# Settings in asmdef inspector, edits are lost ([0a988fa](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/0a988faa1dede0bca577caf0f96c179e4d5eedb7))
+
+
+### Features
+
+* add assembly filter to compile with custom compiler ([acfa0e6](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/acfa0e6117ba3d3e74a15fedea43236d3daf81e3))
+* in Unity 2020.2 or later, initialize CSharpCompilerSettings for first compilation ([3924f1a](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/3924f1a1838bed92606ee1b7720e1bf01ec7e530))
+* reload all CSharpCompilerSettings_* assembly from project settings window ([9a4b7c5](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/9a4b7c58505fa4f68d6dd32f8c9ec1009c453c5a))
+* support .editorconfig for analyzer ([0e1d4c3](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/0e1d4c36555e4a004ba11583a421fd2acc82b118))
+* support nuget package drawer ([34d1a28](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/34d1a28538c1615248b09b3c4dd7657f2bd77b20))
+* support roslyn analyzer ([0b06968](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/0b069685563c79f541bf570bb7aff3411f7b851a)), closes [#9](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/9)
+
 # [1.4.0-preview.1](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/1.3.0...1.4.0-preview.1) (2020-12-23)
 
 
