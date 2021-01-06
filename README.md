@@ -250,6 +250,21 @@ If you want to use the C# 9.0 features, set it up as follows:
 
 <br><br><br><br>
 
+## Development Notes
+
+### How to include the asmdef in `Packages` directory
+
+By default, asmdefs under `Packages` and `Assets/Standard Assets/` are **NOT** compiled with the custom compiler package.  
+This is to prevent unintended compiler changes and to minimize the impact of compiler changes.  
+Packages (and store assets) should essentially be compiled with the default compiler.
+
+![image](https://user-images.githubusercontent.com/12690315/103772620-29549b00-506d-11eb-915f-5a8b8c351d40.png)
+
+If you want to compile an embedded package or your custom package with a custom compiler, set `Packages/your_package_name/` instead of `!Packages/`.  
+See [#12](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/12) for details.
+
+<br><br><br><br>
+
 ## Contributing
 
 ### Issues
