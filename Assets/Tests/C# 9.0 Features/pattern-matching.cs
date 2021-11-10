@@ -9,6 +9,7 @@ We are considering a small handful of enhancements to pattern-matching for C# 9.
 - https://github.com/dotnet/csharplang/issues/1350 Negated `not` patterns that require a given pattern *not* to match; and
 - https://github.com/dotnet/csharplang/issues/812 Relational patterns that require the input value to be less than, less than or equal to, etc a given constant.
 */
+#if CUSTOM_COMPILE
 
 using NUnit.Framework;
 
@@ -20,10 +21,10 @@ namespace CSharp_9_Features
         public static bool IsNotNull<T>(this T t) => t is not null;
     }
 
-    internal partial class Tests
+    public class Cs9_PatternMatching
     {
         [Test]
-        public static void PatternMatching_AndOr_1()
+        public void IsLetter_Sharp()
         {
             var actual = $"'#' is letter ? {'#'.IsLetter()}";
             var expected = $"'#' is letter ? False";
@@ -32,7 +33,7 @@ namespace CSharp_9_Features
         }
 
         [Test]
-        public static void PatternMatching_AndOr_2()
+        public void IsLetter_C()
         {
             var actual = $"'c' is letter ? {'c'.IsLetter()}";
             var expected = $"'c' is letter ? True";
@@ -41,7 +42,7 @@ namespace CSharp_9_Features
         }
 
         [Test]
-        public static void PatternMatching_Not_1()
+        public void IsNotNull_Null()
         {
             object obj = null;
             var actual = $"obj is not null ? {obj.IsNotNull()}";
@@ -51,7 +52,7 @@ namespace CSharp_9_Features
         }
 
         [Test]
-        public static void PatternMatching_Not_2()
+        public void IsNotNull_NotNull()
         {
             object obj = "";
             var actual = $"obj is not null ? {obj.IsNotNull()}";
@@ -61,3 +62,4 @@ namespace CSharp_9_Features
         }
     }
 }
+#endif

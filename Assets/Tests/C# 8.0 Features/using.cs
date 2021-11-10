@@ -5,7 +5,7 @@ The language will add two new capabilities around the `using` statement in order
 management simpler: `using` should recognize a disposable pattern in addition to `IDisposable` and add a `using`
 declaration to the language.
 */
-
+#if CUSTOM_COMPILE
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.TestTools;
@@ -13,34 +13,27 @@ using System;
 
 namespace CSharp_8_Features
 {
-    readonly struct DeferredMessage : IDisposable
-    {
-        private readonly string _message;
-        public DeferredMessage(string message) => _message = message;
-        public void Dispose() => Debug.Log(_message);
-    }
-
-    ref struct RefDisposable
+    public readonly struct ReadOnlyStructDisposable : IDisposable
     {
         public void Dispose()
         {
         }
     }
 
-    internal partial class Tests
+    public ref struct RefDisposable
+    {
+        public void Dispose()
+        {
+        }
+    }
+
+    public class Cs8_Using
     {
         [Test]
-        public static void Using_Test()
+        public void Test()
         {
-            // log order: c -> b -> a
-            LogAssert.Expect(LogType.Log, "c");
-            LogAssert.Expect(LogType.Log, "b");
-            LogAssert.Expect(LogType.Log, "a");
-
-            using var a = new DeferredMessage("a");
-            using var b = new DeferredMessage("b");
-
-            Debug.Log("c");
+            using var a = new ReadOnlyStructDisposable();
+            using var b = new ReadOnlyStructDisposable();
 
             using (new RefDisposable())
             {
@@ -48,3 +41,4 @@ namespace CSharp_8_Features
         }
     }
 }
+#endif

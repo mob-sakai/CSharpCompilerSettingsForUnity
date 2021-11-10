@@ -7,7 +7,7 @@ Add support for _virtual extension methods_ - methods in interfaces with concret
 These are similar to Java's ["Default Methods"](http://docs.oracle.com/javase/tutorial/java/IandI/defaultmethods.html).
 (Based on the likely implementation technique) this feature requires corresponding support in the CLI/CLR. Programs that take advantage of this feature cannot run on earlier versions of the platform.
 */
-
+#if CUSTOM_COMPILE
 using NUnit.Framework;
 
 namespace CSharp_8_Features
@@ -34,11 +34,10 @@ namespace CSharp_8_Features
         public int X() => 2;
     }
 
-
-    internal partial class Tests
+    public class Cs8_DefaultInterfaceMethod
     {
         [Test]
-        public static void DefaultInterfaceMethod_WithoutImplement()
+        public void WithoutImplement()
         {
             var actual = new WithoutImplement().X();
             var expected = 1;
@@ -47,7 +46,7 @@ namespace CSharp_8_Features
         }
 
         [Test]
-        public static void DefaultInterfaceMethod_WithImplement()
+        public void WithImplement()
         {
             var actual = new WithImplement().X();
             var expected = 2;
@@ -56,3 +55,4 @@ namespace CSharp_8_Features
         }
     }
 }
+#endif

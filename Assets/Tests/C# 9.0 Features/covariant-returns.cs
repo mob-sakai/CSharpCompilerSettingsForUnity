@@ -7,6 +7,7 @@ Support _covariant return types_. Specifically, permit the override of a method 
 
 */
 
+#if CUSTOM_COMPILE
 #if NET_5
 namespace CSharp_9_Features.CovariantReturns
 {
@@ -33,4 +34,5 @@ namespace CSharp_9_Features.CovariantReturns
         }
     }
 }
+#endif
 #endif

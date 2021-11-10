@@ -4,7 +4,7 @@
 In C# 8.0, we extended the concept of an *unmanaged* type to include constructed (generic) types.
 This is a placeholder for its specification.
 */
-
+#if CUSTOM_COMPILE
 using NUnit.Framework;
 
 namespace CSharp_8_Features
@@ -25,10 +25,10 @@ namespace CSharp_8_Features
         public override string ToString() => $"{Key}:{Value}";
     }
 
-    internal partial class Tests
+    public class Cs8_UnmanagedConstructedTypes
     {
         [Test]
-        public static void UnmanagedConstructedTypes()
+        public void KeyValuePairDefault()
         {
             var kv = new KeyValuePair<int, int>(1, 2);
             kv.Value = 3;
@@ -40,7 +40,7 @@ namespace CSharp_8_Features
         }
 
         [Test]
-        public static void UnmanagedConstructedTypes_Pointer_1()
+        public void CallMethodWithPointer()
         {
             unsafe
             {
@@ -56,7 +56,7 @@ namespace CSharp_8_Features
         }
 
         [Test]
-        public static void UnmanagedConstructedTypes_Pointer_2()
+        public void ChangeValueWithPointer()
         {
             unsafe
             {
@@ -72,7 +72,7 @@ namespace CSharp_8_Features
         }
 
         [Test]
-        public static void UnmanagedConstructedTypes_ShallowCopy()
+        public void ShallowCopy()
         {
             var kv = new KeyValuePair<int, int>(1, 2);
             var ckv = kv;
@@ -85,3 +85,4 @@ namespace CSharp_8_Features
         }
     }
 }
+#endif

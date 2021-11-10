@@ -2,8 +2,7 @@
 using Coffee.CSharpCompilerSettings;
 using NUnit.Framework;
 
-
-public class ReflectionTests
+internal class ReflectionTests
 {
     public class ReflectionTestClass
     {

@@ -1,7 +1,7 @@
 ﻿using NUnit.Framework;
 using UnityEngine;
 
-public class ModifySymbolTests
+internal class ModifySymbolTests
 {
     [Test]
     public void Define_ADD_SYMBOL()

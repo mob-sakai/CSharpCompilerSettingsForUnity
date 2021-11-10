@@ -9,6 +9,7 @@ but become effectively `get` only once object creation has completed.
 This allows for a much more flexible immutable model in C#.
 */
 
+#if CUSTOM_COMPILE
 #if NET_5
 namespace CSharp_9_Features.InitOnlySetters
 {
@@ -25,4 +26,5 @@ namespace CSharp_9_Features.InitOnlySetters
             $"Temp = {TemperatureInCelsius}, with {PressureInMillibars} pressure";
     }
 }
+#endif
 #endif

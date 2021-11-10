@@ -5,15 +5,16 @@ Language support for a native-sized signed and unsigned integer types.
 The motivation is for interop scenarios and for low-level libraries.
 
 */
+#if CUSTOM_COMPILE
 
 using NUnit.Framework;
 
 namespace CSharp_9_Features
 {
-    internal partial class Tests
+    public class Cs9_NativeSizedIntegers
     {
         [Test]
-        public static void NativeSizedIntegers_Test_1()
+        public void CastToNint()
         {
             nint x = 3;
             nint y = 4;
@@ -25,7 +26,7 @@ namespace CSharp_9_Features
         }
 
         [Test]
-        public static void NativeSizedIntegers_Test_2()
+        public void CastToInt()
         {
             nint x = 3;
             nint y = 4;
@@ -37,3 +38,4 @@ namespace CSharp_9_Features
         }
     }
 }
+#endif

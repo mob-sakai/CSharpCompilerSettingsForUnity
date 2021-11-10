@@ -3,15 +3,15 @@
 
 Support local functions that disallow capturing state from the enclosing scope.
 */
-
+#if CUSTOM_COMPILE
 using NUnit.Framework;
 
 namespace CSharp_8_Features
 {
-    internal partial class Tests
+    public class Cs8_StaticLocalFunctions
     {
         [Test]
-        public static void StaticLocalFunctions_Test()
+        public void Test()
         {
             // a local function without closure (static) -> OK.
             static int ToDouble(int x) => x * 2;
@@ -27,3 +27,4 @@ namespace CSharp_8_Features
         }
     }
 }
+#endif

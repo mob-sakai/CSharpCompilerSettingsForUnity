@@ -3,16 +3,16 @@
 
 We modify the section [*Stack allocation*](https://github.com/dotnet/csharplang/blob/master/spec/unsafe-code.md#stack-allocation) of the C# language specification to relax the places when a `stackalloc` expression may appear.
 */
-
+#if CUSTOM_COMPILE
 using System;
 using NUnit.Framework;
 
 namespace CSharp_8_Features
 {
-    internal partial class Tests
+    public class Cs8_StackAllocation
     {
         [Test]
-        public static void StackAllocation_Test_1()
+        public void ToSpan()
         {
             Span<int> numbers = stackalloc[] {1, 2, 3, 4, 5, 6};
             var actual = numbers.IndexOfAny(stackalloc[] {2, 4, 6, 8});
@@ -24,7 +24,7 @@ namespace CSharp_8_Features
         static int M(Span<byte> buf) => 0;
 
         [Test]
-        public static void StackAllocation_Test_2()
+        public void ToStackAlloc()
         {
             static int M(Span<int> buf) => 0;
 
@@ -35,3 +35,4 @@ namespace CSharp_8_Features
         }
     }
 }
+#endif

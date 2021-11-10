@@ -7,7 +7,7 @@ C# has support for iterator methods and async methods, but no support for a meth
 We should rectify this by allowing for `await` to be used in a new form of `async` iterator, one that returns an `IAsyncEnumerable<T>` or `IAsyncEnumerator<T>` rather than an `IEnumerable<T>` or `IEnumerator<T>`, with `IAsyncEnumerable<T>` consumable in a new `await foreach`.
 An `IAsyncDisposable` interface is also used to enable asynchronous cleanup.
 */
-
+#if CUSTOM_COMPILE
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -34,10 +34,10 @@ namespace CSharp_8_Features
         }
     }
 
-    internal partial class Tests
+    public class Cs8_AsyncStream
     {
         [UnityTest]
-        public IEnumerator AsyncStreams_Test_1()
+        public IEnumerator Test()
         {
             var task = Task.Run(async () =>
             {
@@ -65,3 +65,4 @@ namespace CSharp_8_Features
         }
     }
 }
+#endif

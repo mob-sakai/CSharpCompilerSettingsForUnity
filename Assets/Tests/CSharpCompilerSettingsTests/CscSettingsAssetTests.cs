@@ -1,7 +1,7 @@
 ﻿using Coffee.CSharpCompilerSettings;
 using NUnit.Framework;
 
-public class CscSettingsAssetTests
+internal class CscSettingsAssetTests
 {
     private const string TestAsmdefPath = "Assets/Tests/CSharpCompilerSettingsTests/CSharpCompilerSettingsTests.asmdef";
 
@@ -44,16 +44,17 @@ public class CscSettingsAssetTests
         Assert.AreEqual(expected, asset.LanguageVersion);
     }
 
-    [TestCase("{\"m_LanguageVersion\":700,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;!CSHARP_7_1_OR_NEWER;!CSHARP_7_2_OR_NEWER;!CSHARP_7_3_OR_NEWER;!CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;")]
-    [TestCase("{\"m_LanguageVersion\":701,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;!CSHARP_7_2_OR_NEWER;!CSHARP_7_3_OR_NEWER;!CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;")]
-    [TestCase("{\"m_LanguageVersion\":702,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;!CSHARP_7_3_OR_NEWER;!CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;")]
-    [TestCase("{\"m_LanguageVersion\":703,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;CSHARP_7_3_OR_NEWER;!CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;")]
-    [TestCase("{\"m_LanguageVersion\":800,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;CSHARP_7_3_OR_NEWER;CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;")]
-    [TestCase("{\"m_LanguageVersion\":900,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;CSHARP_7_3_OR_NEWER;CSHARP_8_OR_NEWER;CSHARP_9_OR_NEWER;")]
+    [TestCase("{\"m_LanguageVersion\":700,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;!CSHARP_7_1_OR_NEWER;!CSHARP_7_2_OR_NEWER;!CSHARP_7_3_OR_NEWER;!CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;!CSHARP_10_OR_NEWER;")]
+    [TestCase("{\"m_LanguageVersion\":701,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;!CSHARP_7_2_OR_NEWER;!CSHARP_7_3_OR_NEWER;!CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;!CSHARP_10_OR_NEWER;")]
+    [TestCase("{\"m_LanguageVersion\":702,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;!CSHARP_7_3_OR_NEWER;!CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;!CSHARP_10_OR_NEWER;")]
+    [TestCase("{\"m_LanguageVersion\":703,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;CSHARP_7_3_OR_NEWER;!CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;!CSHARP_10_OR_NEWER;")]
+    [TestCase("{\"m_LanguageVersion\":800,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;CSHARP_7_3_OR_NEWER;CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;!CSHARP_10_OR_NEWER;")]
+    [TestCase("{\"m_LanguageVersion\":900,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;CSHARP_7_3_OR_NEWER;CSHARP_8_OR_NEWER;CSHARP_9_OR_NEWER;!CSHARP_10_OR_NEWER;")]
+    [TestCase("{\"m_LanguageVersion\":1000,\"m_UseDefaultCompiler\":false}", "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;CSHARP_7_3_OR_NEWER;CSHARP_8_OR_NEWER;CSHARP_9_OR_NEWER;CSHARP_10_OR_NEWER;")]
     [TestCase("{\"m_LanguageVersion\":2147483646,\"m_UseDefaultCompiler\":false}",
-        "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;CSHARP_7_3_OR_NEWER;CSHARP_8_OR_NEWER;CSHARP_9_OR_NEWER;")]
+        "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;CSHARP_7_3_OR_NEWER;CSHARP_8_OR_NEWER;CSHARP_9_OR_NEWER;!CSHARP_10_OR_NEWER;")]
     [TestCase("{\"m_LanguageVersion\":2147483647,\"m_UseDefaultCompiler\":false}",
-        "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;CSHARP_7_3_OR_NEWER;CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;")]
+        "CSHARP_7_OR_NEWER;CSHARP_7_1_OR_NEWER;CSHARP_7_2_OR_NEWER;CSHARP_7_3_OR_NEWER;CSHARP_8_OR_NEWER;!CSHARP_9_OR_NEWER;!CSHARP_10_OR_NEWER;")]
     public void AdditionalSymbol(string json, string expected)
     {
         var asset = CscSettingsAsset.CreateFromJson(json);
@@ -97,7 +98,7 @@ public class CscSettingsAssetTests
         Assert.AreEqual(true, settings.EnableDebugLog);
         Assert.AreEqual(true, settings.ShouldToUseAnalyzer("Assets/test.asmdef"));
         Assert.AreEqual(Nullable.Disable, settings.Nullable);
-        Assert.AreEqual(new NugetPackage("Microsoft.Net.Compilers.Toolset", "3.8.0"), settings.CompilerPackage);
+        Assert.AreEqual(new NugetPackage("Microsoft.Net.Compilers.Toolset", "4.0.1"), settings.CompilerPackage);
         CollectionAssert.AreEqual(new[] {new NugetPackage("ErrorProne.NET.CoreAnalyzers", "0.1.2", NugetPackage.CategoryType.Analyzer)}, settings.AnalyzerPackages);
     }
 }

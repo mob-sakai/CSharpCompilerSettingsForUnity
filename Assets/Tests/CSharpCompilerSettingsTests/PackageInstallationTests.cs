@@ -7,7 +7,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.TestTools;
 
-public class PackageInstallationTests
+internal class PackageInstallationTests
 {
     [Test]
     public void Install_MicrosoftNetCompilers3x0()

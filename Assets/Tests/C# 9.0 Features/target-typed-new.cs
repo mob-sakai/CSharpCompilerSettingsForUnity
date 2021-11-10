@@ -3,16 +3,17 @@
 
 Do not require type specification for constructors when the type is known.
 */
+#if CUSTOM_COMPILE
 
 using System.Collections.Generic;
 using NUnit.Framework;
 
 namespace CSharp_9_Features
 {
-    internal partial class Tests
+    public class Cs9_TargetTypedNew
     {
         [Test]
-        public static void TargetTypedNew()
+        public void Test()
         {
             Dictionary<int, Dictionary<string, object>> obj = new ();
 
@@ -20,3 +21,4 @@ namespace CSharp_9_Features
         }
     }
 }
+#endif

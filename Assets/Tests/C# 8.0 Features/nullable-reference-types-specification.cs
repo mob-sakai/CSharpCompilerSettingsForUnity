@@ -4,7 +4,7 @@
 Nullable reference types have the same syntax `T?` as the short form of nullable value types, but do not have a corresponding long form.
 For the purposes of the specification, the current `nullable_type` production is renamed to `nullable_value_type`, and a `nullable_reference_type` production is added.
 */
-
+#if CUSTOM_COMPILE
 namespace CSharp_8_Features.NullableReferenceTypes
 {
     class Program
@@ -22,3 +22,4 @@ namespace CSharp_8_Features.NullableReferenceTypes
         }
     }
 }
+#endif

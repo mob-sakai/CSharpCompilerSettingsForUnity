@@ -3,15 +3,15 @@
 
 In C# 8.0 we added a feature that permits an interpolated verbatim string to be introduced with the characters `@$"` or the characters `$@"`.  This is a placeholder for its specification.
 */
-
+#if CUSTOM_COMPILE
 using NUnit.Framework;
 
 namespace CSharp_8_Features
 {
-    internal partial class Tests
+    public class Cs8_AlternativeInterpolatedVerbatim
     {
         [Test]
-        public static void AlternativeInterpolatedVerbatimStrings_Test_1()
+        public void DollerAt()
         {
             var x = 123456;
             var y = 987654;
@@ -27,7 +27,7 @@ verbatim (here) string
         }
 
         [Test]
-        public static void AlternativeInterpolatedVerbatimStrings_Test_2()
+        public void AtDoller()
         {
             var x = 123456;
             var y = 987654;
@@ -43,3 +43,4 @@ verbatim (here) string
         }
     }
 }
+#endif

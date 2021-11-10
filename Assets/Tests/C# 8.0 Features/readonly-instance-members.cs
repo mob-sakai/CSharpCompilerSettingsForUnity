@@ -5,7 +5,7 @@ Provide a way to specify individual instance members on a struct do not modify s
 It is worth noting that `readonly instance member` != `pure instance member`. A `pure` instance member guarantees no state will be modified. A `readonly` instance member only guarantees that instance state will not be modified.
 All instance members on a `readonly struct` could be considered implicitly `readonly instance members`. Explicit `readonly instance members` declared on non-readonly structs would behave in the same manner. For example, they would still create hidden copies if you called an instance member (on the current instance or on a field of the instance) which was itself not-readonly.
 */
-
+#if CUSTOM_COMPILE
 using System;
 using NUnit.Framework;
 
@@ -38,10 +38,10 @@ namespace CSharp_8_Features
         // }
     }
 
-    internal partial class Tests
+    public class Cs8_ReadonlyInstanceMembers
     {
         [Test]
-        public static void ReadonlyInstanceMembers_Test()
+        public void Test()
         {
             var point = new Point2(3, 4);
             var actual = point.ToString();
@@ -51,3 +51,4 @@ namespace CSharp_8_Features
         }
     }
 }
+#endif

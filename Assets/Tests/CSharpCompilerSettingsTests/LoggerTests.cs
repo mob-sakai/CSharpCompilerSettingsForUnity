@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using Logger = Coffee.CSharpCompilerSettings.Logger;
 
-public class LoggerSetupTests
+internal class LoggerSetupTests
 {
     [Test]
     public void Setup()

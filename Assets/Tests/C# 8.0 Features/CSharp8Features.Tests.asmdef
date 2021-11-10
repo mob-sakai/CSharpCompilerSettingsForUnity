@@ -1,12 +1,10 @@
 {
-    "name": "CSharp8Features.Tests",
+    "name": "CSharp8Features",
     "references": [],
     "optionalUnityReferences": [
         "TestAssemblies"
     ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": true,

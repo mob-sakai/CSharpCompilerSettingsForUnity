@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "com.cysharp.runtimeunittesttoolkit": "2.5.3",
     "com.unity.modules.ai": "1.0.0",
     "com.unity.modules.animation": "1.0.0",
     "com.unity.modules.assetbundle": "1.0.0",
@@ -30,5 +31,15 @@
     "com.unity.modules.vr": "1.0.0",
     "com.unity.modules.wind": "1.0.0",
     "com.unity.modules.xr": "1.0.0"
-  }
+  },
+  "scopedRegistries": [
+    {
+      "name": "package.openupm.com",
+      "url": "https://package.openupm.com",
+      "scopes": [
+        "com.cysharp.runtimeunittesttoolkit",
+        "com.openupm"
+      ]
+    }
+  ]
 }

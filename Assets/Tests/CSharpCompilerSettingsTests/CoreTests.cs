@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using Logger = Coffee.CSharpCompilerSettings.Logger;
 
-public class CoreTests : IPrebuildSetup, IPostBuildCleanup
+internal class CoreTests : IPrebuildSetup, IPostBuildCleanup
 {
     private const string TestAsmdefPath = "Assets/Tests/CSharpCompilerSettingsTests/CSharpCompilerSettingsTests.asmdef";
 
@@ -50,13 +50,6 @@ public class CoreTests : IPrebuildSetup, IPostBuildCleanup
         var expected = Path.GetDirectoryName(TestAsmdefPath) + "/CSharpCompilerSettings_271b3c708daf4cf4ab4e8c9ffd124a72.dll";
         var actual = Core.GetPortableDllPath(asmdefPath);
         Assert.AreEqual(expected, actual);
-    }
-
-    [TestCase("Temp/CSharpCompilerSettings_.dll", "Assembly <b>'CSharpCompilerSettings_'</b> requires default csc.")]
-    public void OnAssemblyCompilationStarted(string outpath, string log)
-    {
-        LogAssert.Expect(LogType.Warning, new Regex(log));
-        Core.OnAssemblyCompilationStarted(outpath);
     }
 
     [TestCase("", false)]

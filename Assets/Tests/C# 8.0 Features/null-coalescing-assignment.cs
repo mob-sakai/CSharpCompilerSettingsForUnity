@@ -4,15 +4,15 @@
 Simplifies a common coding pattern where a variable is assigned a value if it is null.
 As part of this proposal, we will also loosen the type requirements on `??` to allow an expression whose type is an unconstrained type parameter to be used on the left-hand side.
 */
-
+#if CUSTOM_COMPILE
 using NUnit.Framework;
 
 namespace CSharp_8_Features
 {
-    internal partial class Tests
+    public class Cs8_NullCoalescingAssignment
     {
         [Test]
-        public static void NullCoalescingAssignment_Test_1()
+        public void Null()
         {
             string actual = null;
             actual ??= "default string";
@@ -22,7 +22,7 @@ namespace CSharp_8_Features
         }
 
         [Test]
-        public static void NullCoalescingAssignment_Test_2()
+        public void NotNull()
         {
             string actual = "default string";
             actual ??= "other string";
@@ -32,3 +32,4 @@ namespace CSharp_8_Features
         }
     }
 }
+#endif

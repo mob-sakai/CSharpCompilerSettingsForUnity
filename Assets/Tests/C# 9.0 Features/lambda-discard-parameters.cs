@@ -6,6 +6,7 @@ For example:
 - lambdas: `(_, _) => 0`, `(int _, int _) => 0`
 - anonymous methods: `delegate(int _, int _) { return 0; }`
 */
+#if CUSTOM_COMPILE
 
 using NUnit.Framework;
 using UnityEngine;
@@ -14,17 +15,16 @@ using System;
 
 namespace CSharp_9_Features
 {
-    internal partial class Tests
+    public class Cs9_LambdaDiscardParameters
     {
         private static Action<object, int> onSomeThing;
 
         [Test]
-        public static void LambdaDiscardParameters()
+        public void Test()
         {
             onSomeThing = (_, _) => Debug.Log("LambdaDiscardParameters");
-
-            LogAssert.Expect(LogType.Log, "LambdaDiscardParameters");
             onSomeThing(null, 0);
         }
     }
 }
+#endif

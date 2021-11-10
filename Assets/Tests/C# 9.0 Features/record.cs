@@ -6,6 +6,7 @@ a `record_base` `argument_list` if the `record_declaration` does not contain a `
 At most one partial type declaration of a partial record may provide a `parameter_list`.
 It is an error for a `parameter_list` to be empty.
 */
+#if CUSTOM_COMPILE
 
 using NUnit.Framework;
 
@@ -28,11 +29,11 @@ namespace CSharp_9_Features
         }
     }
 
-    internal partial class Tests
+    public class Cs9_Record
     {
         [TestCase("Foo", "Bar")]
         [TestCase("HogeHoge", "FugaFuga")]
-        public static void Record(string firstName, string lastName)
+        public void Construct(string firstName, string lastName)
         {
             var p = new Person(firstName, lastName);
 
@@ -42,7 +43,7 @@ namespace CSharp_9_Features
 
         [TestCase("Foo", "Bar")]
         [TestCase("HogeHoge", "FugaFuga")]
-        public static void Record_ToString(string firstName, string lastName)
+        public void ToString(string firstName, string lastName)
         {
             var p = new Person(firstName, lastName);
 
@@ -51,7 +52,7 @@ namespace CSharp_9_Features
 
         [TestCase("Foo", "Bar")]
         [TestCase("HogeHoge", "FugaFuga")]
-        public static void Record_Deconstruct(string firstName, string lastName)
+        public void Deconstruct(string firstName, string lastName)
         {
             var p = new Person(firstName, lastName);
             var (first, last) = p;
@@ -62,7 +63,7 @@ namespace CSharp_9_Features
 
         [TestCase("Foo", "Bar")]
         [TestCase("HogeHoge", "FugaFuga")]
-        public static void Record_With(string firstName, string lastName)
+        public void With(string firstName, string lastName)
         {
             var p = new Person(firstName, lastName);
             var (first, last) = p with { FirstName = "Void"};
@@ -72,3 +73,4 @@ namespace CSharp_9_Features
         }
     }
 }
+#endif
