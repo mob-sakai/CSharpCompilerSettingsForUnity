@@ -174,6 +174,8 @@ namespace Coffee.CSharpCompilerSettings
                 sb.Append(LVersion.CSharp7_3 <= v ? "CSHARP_7_3_OR_NEWER;" : "!CSHARP_7_3_OR_NEWER;");
                 sb.Append(LVersion.CSharp8 <= v ? "CSHARP_8_OR_NEWER;" : "!CSHARP_8_OR_NEWER;");
                 sb.Append(LVersion.CSharp9 <= v ? "CSHARP_9_OR_NEWER;" : "!CSHARP_9_OR_NEWER;");
+
+                sb.Append("CUSTOM_COMPILE;");
             }
 
             if (!IsProjectSetting && 0 < m_SymbolModifier.Length)
