@@ -18,6 +18,7 @@
 "${PLUGIN_SOURCE}/AssemblyInfo.cs"
 "${PLUGIN_SOURCE}/Core.cs"
 "${PLUGIN_SOURCE}/CustomCompiler_Legacy.cs"
+"${PLUGIN_SOURCE}/CustomCompiler_2021.cs"
 "${PLUGIN_SOURCE}/CscSettingsAsset.cs"
 "${PLUGIN_SOURCE}/CSharpLanguageVersion.cs"
 "${PLUGIN_SOURCE}/ReflectionExtensions.cs"

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using UnityEditor;
+using UnityEditor.Compilation;
 using UnityEngine;
 
 namespace Coffee.CSharpCompilerSettings
@@ -41,6 +42,13 @@ namespace Coffee.CSharpCompilerSettings
 
         public static void RequestCompilation(string assemblyName = null)
         {
+            var unityVersions = Application.unityVersion.Split('.');
+            if(2021 <= int.Parse(unityVersions[0]))
+            {
+                typeof(CompilationPipeline).Call("RequestScriptCompilation");
+                return;
+            }
+
             var editorCompilation = Type.GetType("UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface, UnityEditor")
                 .Get("Instance");
 

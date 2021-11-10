@@ -25,6 +25,7 @@ namespace Coffee.CSharpCompilerSettings
 
         private static readonly ICustomCompiler[] customCompilers = new ICustomCompiler[]
         {
+            CustomCompiler_2021.instance,
             CustomCompiler_Legacy.instance,
         };
 
