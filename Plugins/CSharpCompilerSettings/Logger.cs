@@ -11,6 +11,7 @@ namespace Coffee.CSharpCompilerSettings
         {
             s_LogHeader = header;
             s_EnableLogFunc = logLevelFunc;
+            LogDebug("Setup");
         }
 
         public static void LogInfo(string format, params object[] args)

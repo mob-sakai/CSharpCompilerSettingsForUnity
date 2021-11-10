@@ -1,20 +1,59 @@
 using System;
-using System.Collections;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
-using UnityEditor.Compilation;
 using Assembly = System.Reflection.Assembly;
 
 namespace Coffee.CSharpCompilerSettings
 {
+    internal interface ICustomCompiler : IDisposable
+    {
+        bool IsValid();
+        void Register();
+    }
+
     internal static class Core
     {
         private static bool IsGlobal { get; set; }
+
+        private static bool IsDevelopAssembly
+        {
+            get { return typeof(Core).Assembly.GetName().Name == "CSharpCompilerSettings_"; }
+        }
+
+        private static readonly ICustomCompiler[] customCompilers = new ICustomCompiler[]
+        {
+            CustomCompiler_Legacy.instance,
+        };
+
+        private static ICustomCompiler currentCustomCompiler { get; set; }
+
+        public static bool ShouldToRecompile(string assemblyName, string asmdef)
+        {
+            if (assemblyName == typeof(Core).Assembly.GetName().Name)
+            {
+                // Logger.LogWarning("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> requires default csc.</color>", assemblyName);
+                return false;
+            }
+            else if (IsGlobal && GetPortableDllPath(asmdef) != null)
+            {
+                // Logger.LogWarning("  <color=#bbbb44><Skipped> Local CSharpCompilerSettings.*.dll for <b>'{0}'</b> is found.</color>", assemblyName);
+                return false;
+            }
+            else if (!IsGlobal && !IsInSameDirectory(asmdef))
+            {
+                // Logger.LogWarning("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> is not target.</color>", assemblyName);
+                return false;
+            }
+            else if (!GetSettings().ShouldToRecompile(asmdef))
+            {
+                // Logger.LogWarning("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> does not need to be recompiled.</color>", assemblyName);
+                return false;
+            }
+            return true;
+        }
 
         public static string GetAssemblyName(string asmdefPath)
         {
@@ -68,8 +107,8 @@ namespace Coffee.CSharpCompilerSettings
         public static string ModifyResponseFile(CscSettingsAsset setting, string assemblyName, string asmdefPath, string text)
         {
             var asmdefDir = string.IsNullOrEmpty(asmdefPath) ? null : Path.GetDirectoryName(asmdefPath);
-            text = Regex.Replace(text, "[\r\n]+", "\n");
-            text = Regex.Replace(text, "^-", "/");
+            text = Regex.Replace(text, "[\r\n]+", "\n", RegexOptions.Multiline);
+            text = Regex.Replace(text, "^-", "/", RegexOptions.Multiline);
             text = Regex.Replace(text, "\n/debug\n", "\n/debug:portable\n");
             text += "\n/preferreduilang:en-US";
 
@@ -139,127 +178,6 @@ namespace Coffee.CSharpCompilerSettings
             return text;
         }
 
-        private static void ChangeCompilerProcess(object compiler, object scriptAssembly, CscSettingsAsset setting)
-        {
-            if (IsDevelopAssembly)
-                return;
-
-            var tProgram = Type.GetType("UnityEditor.Utils.Program, UnityEditor");
-            var tScriptCompilerBase = Type.GetType("UnityEditor.Scripting.Compilers.ScriptCompilerBase, UnityEditor");
-            var fiProcess = tScriptCompilerBase.GetField("process", BindingFlags.NonPublic | BindingFlags.Instance);
-            var psi = compiler.Get("process", fiProcess).Call("GetProcessStartInfo") as ProcessStartInfo;
-            var oldCommand = (psi.FileName + " " + psi.Arguments).Replace('\\', '/');
-            var command = oldCommand.Replace(EditorApplication.applicationContentsPath.Replace('\\', '/'), "@APP_CONTENTS@");
-            var isDefaultCsc = Regex.IsMatch(command, "@APP_CONTENTS@/[^ ]*(mcs|csc)");
-            var assemblyName = Path.GetFileNameWithoutExtension(scriptAssembly.Get("Filename") as string);
-            var asmdefDir = scriptAssembly.Get("OriginPath") as string;
-            var asmdefPath = string.IsNullOrEmpty(asmdefDir) ? "" : FindAsmdef(asmdefDir);
-
-            // csc is not Unity default. It is already modified.
-            if (!isDefaultCsc)
-            {
-                Logger.LogWarning("  <color=#bbbb44><Skipped> current csc is not Unity default. It is already modified.</color>");
-                return;
-            }
-
-            // Kill current process.
-            compiler.Call("Dispose");
-
-            // Response file.
-            var responseFile = Regex.Replace(psi.Arguments, "^.*@(.+)$", "$1");
-
-            // Change to custom compiler.
-            if (setting.ShouldToUseCustomCompiler(asmdefPath))
-            {
-                var compilerInfo = CompilerInfo.GetInstalledInfo(setting.CompilerPackage.PackageId);
-
-                // csc is not installed. Restart current process.
-                if (!compilerInfo.IsValid)
-                {
-                    Logger.LogWarning("  <color=#bbbb44><Skipped> C# compiler '{0}' is not installed. Restart compiler process: {1}</color>", compilerInfo.Path, oldCommand);
-
-                    var currentProgram = tProgram.New(psi);
-                    currentProgram.Call("Start");
-                    compiler.Set("process", currentProgram, fiProcess);
-                    return;
-                }
-
-                // Change exe file path.
-                compilerInfo.Setup(psi, responseFile, Application.platform);
-            }
-
-            // Modify response file.
-            var text = File.ReadAllText(responseFile);
-            text = ModifyResponseFile(setting, assemblyName, asmdefPath, text);
-            File.WriteAllText(responseFile, text);
-
-            // Logging
-            if (CscSettingsAsset.instance.EnableDebugLog)
-                Logger.LogDebug("Response file '{0}' has been modified:\n{1}", responseFile, Regex.Replace(text, "\n/reference.*", "") + "\n\n* The references are skipped because it was too long.");
-
-            // Restart compiler process.
-            Logger.LogDebug("Restart compiler process: {0} {1}\n  old command = {2}", psi.FileName, psi.Arguments, oldCommand);
-            var program = tProgram.New(psi);
-            program.Call("Start");
-            compiler.Set("process", program, fiProcess);
-        }
-
-        public static void OnAssemblyCompilationStarted(string name)
-        {
-            try
-            {
-                var assemblyName = Path.GetFileNameWithoutExtension(name);
-                if (assemblyName == typeof(Core).Assembly.GetName().Name)
-                {
-                    Logger.LogWarning("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> requires default csc.</color>", assemblyName);
-                    return;
-                }
-
-                var tEditorCompilationInterface = Type.GetType("UnityEditor.Scripting.ScriptCompilation.EditorCompilationInterface, UnityEditor");
-                var compilerTasks = tEditorCompilationInterface.Get("Instance").Get("compilationTask").Get("compilerTasks") as IDictionary;
-                var scriptAssembly = compilerTasks.Keys.Cast<object>().FirstOrDefault(x => (x.Get("Filename") as string) == assemblyName + ".dll");
-                if (scriptAssembly == null)
-                {
-                    Logger.LogWarning("  <color=#bbbb44><Skipped> scriptAssembly <b>'{0}'</b> is not found.</color>", assemblyName);
-                    return;
-                }
-
-                var asmdefDir = scriptAssembly.Get("OriginPath") as string;
-                var asmdefPath = string.IsNullOrEmpty(asmdefDir) ? "" : FindAsmdef(asmdefDir);
-                if (IsGlobal && GetPortableDllPath(asmdefPath) != null)
-                {
-                    Logger.LogWarning("  <color=#bbbb44><Skipped> Local CSharpCompilerSettings.*.dll for <b>'{0}'</b> is found.</color>", assemblyName);
-                    return;
-                }
-
-                if (!IsGlobal && !IsInSameDirectory(asmdefPath))
-                {
-                    Logger.LogWarning("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> is not target.</color>", assemblyName);
-                    return;
-                }
-
-                var globalSettings = CscSettingsAsset.instance;
-                var settings = GetSettings();
-                if (!globalSettings.ShouldToRecompile(asmdefPath))
-                {
-                    Logger.LogWarning("  <color=#bbbb44><Skipped> Assembly <b>'{0}'</b> does not need to be recompiled.</color>", assemblyName);
-                    return;
-                }
-
-                // Create new compiler to recompile.
-                Logger.LogDebug("<color=#22aa22>Assembly compilation started: <b>{0} should be recompiled.</b></color>\nsettings = {1}", assemblyName, JsonUtility.ToJson(settings));
-                ChangeCompilerProcess(compilerTasks[scriptAssembly], scriptAssembly, settings);
-            }
-            catch (Exception e)
-            {
-                Logger.LogException(e);
-            }
-        }
-
-        static bool IsDevelopAssembly
-        {
-            get { return typeof(Core).Assembly.GetName().Name == "CSharpCompilerSettings_"; }
-        }
 
         [InitializeOnLoadMethod]
         public static void Initialize()
@@ -270,7 +188,9 @@ namespace Coffee.CSharpCompilerSettings
             if (IsGlobal)
             {
                 Logger.Setup(
-                    "<b><color=#bb4444>[CscSettings]</color></b> ",
+                    IsDevelopAssembly
+                        ? "<b><color=#bb4444>[CscSettings(dev)]</color></b> "
+                        : "<b><color=#bb4444>[CscSettings]</color></b> ",
                     () => CscSettingsAsset.instance.EnableDebugLog
                 );
             }
@@ -286,27 +206,18 @@ namespace Coffee.CSharpCompilerSettings
                     Logger.LogException("Target assembly is not found. {0}", typeof(Core).Assembly.Location.Replace(Environment.CurrentDirectory, "."));
             }
 
-            // Dump loaded assemblies
-            if (CscSettingsAsset.instance.EnableDebugLog)
+            // This is global assembly, but the dev assembly is found: do nothing.
+            if (IsGlobal && !IsDevelopAssembly && (Type.GetType("UnityEditor.EditorAssemblies, UnityEditor").Get("loadedAssemblies") as Assembly[]).Any(asm => asm.GetName().Name == "CSharpCompilerSettings_"))
             {
-                var sb = new System.Text.StringBuilder("<color=#22aa22><b>InitializeOnLoad,</b></color> the loaded assemblies:\n");
-                foreach (var asm in Type.GetType("UnityEditor.EditorAssemblies, UnityEditor").Get("loadedAssemblies") as Assembly[])
-                {
-                    var name = asm.GetName().Name;
-                    var path = asm.Location;
-                    if (path.Contains(Path.GetDirectoryName(EditorApplication.applicationPath)))
-                        sb.AppendFormat("  > {0}:\t{1}\n", name, "APP_PATH/.../" + Path.GetFileName(path));
-                    else
-                        sb.AppendFormat("  > <color=#22aa22><b>{0}</b></color>:\t{1}\n", name, path.Replace(Environment.CurrentDirectory, "."));
-                }
-
-                Logger.LogDebug(sb.ToString());
+                Logger.LogWarning("This is global assembly, but the dev assembly is found: ignored.");
+                return;
             }
 
             // Register callback.
-            Logger.LogDebug("<color=#22aa22><b>InitializeOnLoad:</b></color> start watching assembly compilation.");
-            CompilationPipeline.assemblyCompilationStarted -= OnAssemblyCompilationStarted;
-            CompilationPipeline.assemblyCompilationStarted += OnAssemblyCompilationStarted;
+            currentCustomCompiler?.Dispose();
+            currentCustomCompiler = customCompilers.FirstOrDefault(c => c.IsValid());
+            currentCustomCompiler?.Register();
+            Logger.LogDebug("<color=#22aa22><b>InitializeOnLoad:</b></color> A custom compiler registered: {0}", currentCustomCompiler);
 
             // Install custom compiler package before compilation.
             var settings = GetSettings();
