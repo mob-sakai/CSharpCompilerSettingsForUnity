@@ -172,11 +172,11 @@ namespace Coffee.CSharpCompilerSettings
             switch (platform)
             {
                 case RuntimePlatform.WindowsEditor:
-                    return new []{"PowerShell.exe", string.Format("curl -O {0} {1}", downloadPath, url)};
+                    return new[] { "PowerShell.exe", string.Format("curl -O {0} {1}", downloadPath, url) };
                 case RuntimePlatform.OSXEditor:
-                    return new []{"curl", string.Format("-o {0} -L {1}", downloadPath, url)};
+                    return new[] { "curl", string.Format("-o {0} -L {1}", downloadPath, url) };
                 case RuntimePlatform.LinuxEditor:
-                    return new []{"wget", string.Format("-O {0} {1}", downloadPath, url)};
+                    return new[] { "wget", string.Format("-O {0} {1}", downloadPath, url) };
 
                 default:
                     throw new NotSupportedException($"{Application.platform} is not supported");
@@ -198,18 +198,18 @@ namespace Coffee.CSharpCompilerSettings
             {
                 case RuntimePlatform.WindowsEditor:
                     Directory.CreateDirectory(Path.GetDirectoryName(extractTo));
-                    return new[] {PathCombine(contentsPath, "Tools", "7z.exe"), string.Format("x {0} -o{1}", archivePath, extractTo)};
+                    return new[] { PathCombine(contentsPath, "Tools", "7z.exe"), string.Format("x {0} -o{1}", archivePath, extractTo) };
                 case RuntimePlatform.OSXEditor:
                 case RuntimePlatform.LinuxEditor:
                     if (archivePath.EndsWith("tar.gz"))
                     {
                         Directory.CreateDirectory(extractTo);
-                        return new[] {"tar", string.Format("-pzxf {0} -C {1}", archivePath, extractTo)};
+                        return new[] { "tar", string.Format("-pzxf {0} -C {1}", archivePath, extractTo) };
                     }
                     else
                     {
                         Directory.CreateDirectory(Path.GetDirectoryName(extractTo));
-                        return new[] {PathCombine(contentsPath, "Tools", "7za"), string.Format("x {0} -o{1}", archivePath, extractTo)};
+                        return new[] { PathCombine(contentsPath, "Tools", "7za"), string.Format("x {0} -o{1}", archivePath, extractTo) };
                     }
                 default:
                     throw new NotSupportedException($"{Application.platform} is not supported");

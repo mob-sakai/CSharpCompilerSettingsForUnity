@@ -152,9 +152,9 @@ namespace Coffee.CSharpCompilerSettings
                 }
 
                 // Ruleset.
-                var rulesets = new[] {"Assets/Default.ruleset"}
+                var rulesets = new[] { "Assets/Default.ruleset" }
                     .Concat(string.IsNullOrEmpty(asmdefDir)
-                        ? new[] {"Assets/" + assemblyName + ".ruleset"}
+                        ? new[] { "Assets/" + assemblyName + ".ruleset" }
                         : Directory.GetFiles(asmdefDir, "*.ruleset"))
                     .Where(File.Exists);
 

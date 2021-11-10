@@ -77,10 +77,12 @@ namespace Coffee.CSharpCompilerSettings
     [Serializable]
     public struct AssemblyFilter
     {
-        [Tooltip("Include predefined assemblies (Assembly-CSharp-firstpass.dll, Assembly-CSharp-Editor-firstpass.dll, Assembly-CSharp.dll and Assembly-CSharp-Editor.dll)")] [SerializeField]
+        [Tooltip("Include predefined assemblies (Assembly-CSharp-firstpass.dll, Assembly-CSharp-Editor-firstpass.dll, Assembly-CSharp.dll and Assembly-CSharp-Editor.dll)")]
+        [SerializeField]
         private bool m_PredefinedAssemblies;
 
-        [Tooltip("Assemblies filter. Prefix '!' to exclude. (e.g. 'Assets/', '!Packages/')")] [SerializeField]
+        [Tooltip("Assemblies filter. Prefix '!' to exclude. (e.g. 'Assets/', '!Packages/')")]
+        [SerializeField]
         private string[] m_IncludedAssemblies;
 
         public AssemblyFilter(bool predefinedAssemblies, string[] includedAssemblies)
@@ -107,11 +109,10 @@ namespace Coffee.CSharpCompilerSettings
         [SerializeField] private bool m_EnableLogging = false;
         [SerializeField] private Nullable m_Nullable = Nullable.Disable;
         [SerializeField] private NugetPackage m_CompilerPackage = new NugetPackage("Microsoft.Net.Compilers", "3.5.0", NugetPackage.CategoryType.Compiler);
-        [SerializeField] private AssemblyFilter m_CompilerFilter = new AssemblyFilter(true, new[] {"Assets/", "!Assets/Standard Assets/", "!Packages/"});
+        [SerializeField] private AssemblyFilter m_CompilerFilter = new AssemblyFilter(true, new[] { "Assets/", "!Assets/Standard Assets/", "!Packages/" });
         [SerializeField] private NugetPackage[] m_AnalyzerPackages = new NugetPackage[0];
-        [SerializeField] private AssemblyFilter m_AnalyzerFilter = new AssemblyFilter(true, new[] {"Assets/", "!Assets/Standard Assets/", "!Packages/"});
+        [SerializeField] private AssemblyFilter m_AnalyzerFilter = new AssemblyFilter(true, new[] { "Assets/", "!Assets/Standard Assets/", "!Packages/" });
         [SerializeField] private string[] m_SymbolModifier = new string[0];
-
         [SerializeField] [Obsolete] private bool m_UseDefaultCompiler = true;
         [SerializeField] [Obsolete] private string m_PackageName = "Microsoft.Net.Compilers";
         [SerializeField] [Obsolete] private string m_PackageVersion = "3.5.0";
@@ -128,18 +129,13 @@ namespace Coffee.CSharpCompilerSettings
         }
 
         public bool IsProjectSetting { get; private set; }
-
         private static CscSettingsAsset s_Instance;
         public static CscSettingsAsset instance => s_Instance ? s_Instance : s_Instance = CreateFromProjectSettings();
         public NugetPackage CompilerPackage => m_CompilerPackage;
         public Nullable Nullable => m_Nullable;
         public NugetPackage[] AnalyzerPackages => m_AnalyzerPackages;
         public bool EnableDebugLog => m_EnableLogging;
-
-        public bool UseDefaultCompiler
-        {
-            get { return m_CompilerType == CompilerType.BuiltIn || !m_CompilerPackage.IsValid; }
-        }
+        public bool UseDefaultCompiler => m_CompilerType == CompilerType.BuiltIn || !m_CompilerPackage.IsValid;
 
         public string LanguageVersion
         {
