@@ -8,6 +8,7 @@ namespace Coffee.CSharpCompilerSettings
         CSharp7_3 = 703,
         CSharp8 = 800,
         CSharp9 = 900,
+        CSharp10 = 1000,
         Preview = int.MaxValue - 1,
         Latest = int.MaxValue,
     }

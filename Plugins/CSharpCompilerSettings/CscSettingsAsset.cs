@@ -149,6 +149,7 @@ namespace Coffee.CSharpCompilerSettings
                     case CSharpLanguageVersion.CSharp7_3: return "7.3";
                     case CSharpLanguageVersion.CSharp8: return "8.0";
                     case CSharpLanguageVersion.CSharp9: return "9.0";
+                    case CSharpLanguageVersion.CSharp10: return "10.0";
                     case CSharpLanguageVersion.Preview: return "preview";
                     default: return "latest";
                 }
@@ -170,6 +171,7 @@ namespace Coffee.CSharpCompilerSettings
                 sb.Append(LVersion.CSharp7_3 <= v ? "CSHARP_7_3_OR_NEWER;" : "!CSHARP_7_3_OR_NEWER;");
                 sb.Append(LVersion.CSharp8 <= v ? "CSHARP_8_OR_NEWER;" : "!CSHARP_8_OR_NEWER;");
                 sb.Append(LVersion.CSharp9 <= v ? "CSHARP_9_OR_NEWER;" : "!CSHARP_9_OR_NEWER;");
+                sb.Append(LVersion.CSharp10 <= v ? "CSHARP_10_OR_NEWER;" : "!CSHARP_10_OR_NEWER;");
 
                 sb.Append("CUSTOM_COMPILE;");
             }
