@@ -6,7 +6,11 @@ PluginImporter:
   iconMap: {}
   executionOrder: {}
   defineConstraints:
-  - UNITY_2020_2_OR_NEWER
+  - UNITY_2019_1_OR_NEWER
+  - '!UNITY_2021_1_OR_NEWER'
+  - '!UNITY_2020_1'
+  - '!UNITY_2019_4'
+  - '!UNITY_2019_3'
   isPreloaded: 0
   isOverridable: 1
   isExplicitlyReferenced: 1

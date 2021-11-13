@@ -15,7 +15,7 @@ namespace Coffee.CSharpCompilerSettings
             var coreAssemblyName = typeof(ExternalCSharpCompiler).Assembly.GetName().Name;
             if (coreAssemblyName == "ExternalCSharpCompiler_") return;
 
-            Console.WriteLine("[CSharpCompilerSettings] Initialize CSharpCompilerSettings for first compilation: " + typeof(ExternalCSharpCompiler));
+            Console.WriteLine("[ExternalCSharpCompiler] Initialize CSharpCompilerSettings before first compilation: " + typeof(ExternalCSharpCompiler));
 
             var filepath = "Temp/" + typeof(ExternalCSharpCompiler).Assembly.GetName().Name + ".loaded";
             if (File.Exists(filepath)) return;
