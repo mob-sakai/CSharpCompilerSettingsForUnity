@@ -56,49 +56,27 @@ namespace Coffee.CSharpCompilerSettings.Recompiler
             rspPath = "Temp/" + Path.GetFileName(rspPath);
             File.WriteAllText(rspPath, rsp);
 
-            // Detect csc tool exe.
-            var mono = Application.platform != RuntimePlatform.WindowsEditor;
-            var cscToolExe = appContents + "/Tools/RoslynNet46/csc.exe".Replace('/', Path.DirectorySeparatorChar);
-            if (!File.Exists(cscToolExe))
-                cscToolExe = appContents + "/Tools/Roslyn/csc.exe".Replace('/', Path.DirectorySeparatorChar);
-            if (!File.Exists(cscToolExe))
-            {
-                cscToolExe = appContents + "/Tools/Roslyn/csc".Replace('/', Path.DirectorySeparatorChar);
-                mono = false;
-            }
+            var compilerInfo = CompilerInfo.GetInstalledInfo("Microsoft.Net.Compilers.Toolset.3.5.0");
 
-            // Create compilation process.
-            var psi = new ProcessStartInfo
-            {
-                CreateNoWindow = true,
-                UseShellExecute = false,
-                RedirectStandardError = true,
-                RedirectStandardOutput = true,
-            };
+            // Setup recompile process.
+            var psi = new ProcessStartInfo();
+            compilerInfo.Setup(psi, rspPath, Application.platform);
 
-            if (!mono)
+            using (var program = Type.GetType("UnityEditor.Utils.Program, UnityEditor").New(psi) as IDisposable)
             {
-                psi.FileName = Path.GetFullPath(cscToolExe);
-                psi.Arguments = "/shared /noconfig @" + rspPath;
-            }
-            else
-            {
-                psi.FileName = Path.Combine(appContents, "MonoBleedingEdge/bin/mono");
-                psi.Arguments = cscToolExe + " /noconfig @" + rspPath;
-            }
+                // Start recompile.
+                var assemblyName = Path.GetFileName(dllPath);
+                Debug.LogFormat("<b>Recompile [{0}]: start compilation.</b>\n  command = {1} {2}\n", assemblyName, psi.FileName, psi.Arguments);
+                program.Call("Start");
+                program.Call("WaitForExit");
 
-            // Start compilation process.
-            var assemblyName = Path.GetFileName(dllPath);
-            Debug.LogFormat("<b>Recompile [{0}]: start compilation.</b>\n  command = {1} {2}\n", assemblyName, psi.FileName, psi.Arguments);
-            var p = Process.Start(psi);
-            p.Exited += (_, __) =>
-            {
-                if (p.ExitCode == 0)
+                // Check outputs.
+                var exitCode = (int)program.Get("ExitCode");
+                if (exitCode == 0)
                     Debug.LogFormat("<b><color=#22aa22>Recompile [{0}]: success.</color></b>", assemblyName);
                 else
-                    Debug.LogErrorFormat("<b><color=#aa2222>Recompile [{0}]: failure.</color></b>\n{1}\n\n{2}", assemblyName, p.StandardError.ReadToEnd(), p.StandardOutput.ReadToEnd());
-            };
-            p.EnableRaisingEvents = true;
+                    Debug.LogErrorFormat("<b><color=#aa2222>Recompile [{0}]: failure.</color></b>\n{1}", assemblyName, program.Call("GetAllOutput"));
+            }
         }
     }
 
@@ -137,7 +115,6 @@ namespace Coffee.CSharpCompilerSettings.Recompiler
 
         private static void RequestToRecompileIfNeeded(string assemblyPath, CompilerMessage[] messages)
         {
-            Debug.Log(">>>>" + assemblyPath);
             // Skip: Compile error.
             if (messages.Any(x => x.type == CompilerMessageType.Error)) return;
 

@@ -11,9 +11,9 @@
 /r:"${APP_CONTENTS}/Managed/UnityEngine/UnityEngine.IMGUIModule.dll"
 /r:"${APP_CONTENTS}/Managed/UnityEngine/UnityEngine.JSONSerializeModule.dll"
 /r:"${APP_CONTENTS}/Managed/UnityEditor.dll"
-/r:"${APP_CONTENTS}/MonoBleedingEdge/lib/mono/2.0-api/mscorlib.dll"
-/r:"${APP_CONTENTS}/MonoBleedingEdge/lib/mono/2.0-api/System.dll"
-/r:"${APP_CONTENTS}/MonoBleedingEdge/lib/mono/2.0-api/System.Core.dll"
+/r:"${APP_CONTENTS}/MonoBleedingEdge/lib/mono/4.0-api/mscorlib.dll"
+/r:"${APP_CONTENTS}/MonoBleedingEdge/lib/mono/4.0-api/System.dll"
+/r:"${APP_CONTENTS}/MonoBleedingEdge/lib/mono/4.0-api/System.Core.dll"
 
 "${PLUGIN_SOURCE}/AssemblyInfo.cs"
 "${PLUGIN_SOURCE}/Core.cs"

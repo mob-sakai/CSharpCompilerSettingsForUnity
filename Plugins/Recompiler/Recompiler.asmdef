@@ -1,6 +1,8 @@
 {
     "name": "CSharpCompilerSettings.Recompiler",
-    "references": [],
+    "references": [
+        "CSharpCompilerSettings_"
+    ],
     "optionalUnityReferences": [],
     "includePlatforms": [
         "Editor"
