@@ -1,7 +1,7 @@
 {
     "m_Version": 140,
     "m_CompilerType": 1,
-    "m_LanguageVersion": 1000,
+    "m_LanguageVersion": 2147483646,
     "m_EnableLogging": true,
     "m_Nullable": 0,
     "m_CompilerPackage": {
