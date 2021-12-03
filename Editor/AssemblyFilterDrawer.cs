@@ -27,7 +27,7 @@ namespace Coffee.CSharpCompilerSettings
             _roIncludedAssemblies = new ReorderableList(property.serializedObject, _includedAssemblies, true, true, true, true);
             _roIncludedAssemblies.drawHeaderCallback = rect =>
             {
-                EditorGUI.PrefixLabel(rect, new GUIContent(_includedAssemblies.displayName));
+                EditorGUI.PrefixLabel(rect, new GUIContent("Target Assemblies"));
 
                 rect.x += rect.width - 110;
                 rect.width = 110;

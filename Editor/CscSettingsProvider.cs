@@ -16,7 +16,7 @@ namespace Coffee.CSharpCompilerSettings
         private static ReorderableList s_RoAnalyzerPackages;
 
         private static GUIContent s_HeaderCompiler = new GUIContent("Compiler");
-        private static GUIContent s_HeaderAnalyzer = new GUIContent("Analyzer");
+        private static GUIContent s_HeaderAnalyzer = new GUIContent("Analyzer / Source Generator");
         private static GUIContent s_HeaderDebug = new GUIContent("Debug");
 
 
@@ -30,7 +30,7 @@ namespace Coffee.CSharpCompilerSettings
 
             var analyzerPackages = serializedObject.FindProperty("m_AnalyzerPackages");
             s_RoAnalyzerPackages = new ReorderableList(serializedObject, analyzerPackages);
-            s_RoAnalyzerPackages.drawHeaderCallback = rect => EditorGUI.PrefixLabel(rect, GUIUtility.GetControlID(FocusType.Passive), new GUIContent("Analyzer Packages"));
+            s_RoAnalyzerPackages.drawHeaderCallback = rect => EditorGUI.PrefixLabel(rect, GUIUtility.GetControlID(FocusType.Passive), new GUIContent("Packages"));
             s_RoAnalyzerPackages.elementHeight = NugetPackageDrawer.Height;
             s_RoAnalyzerPackages.drawElementCallback = (rect, index, active, focused) =>
             {
@@ -42,7 +42,7 @@ namespace Coffee.CSharpCompilerSettings
                 for (var i = 0; i < analyzerPackages.arraySize; i++)
                 {
                     var sp = analyzerPackages.GetArrayElementAtIndex(i);
-                    sp.FindPropertyRelative("m_Category").intValue = (int) NugetPackage.CategoryType.Analyzer;
+                    sp.FindPropertyRelative("m_Category").intValue = (int)NugetPackage.CategoryType.Analyzer;
                 }
             };
 

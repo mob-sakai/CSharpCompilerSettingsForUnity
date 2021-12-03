@@ -45,7 +45,8 @@ namespace Coffee.CSharpCompilerSettings
             }
 
             // Additional contents.
-            content = Regex.Replace(content, "[\r\n]+</Project>[\r\n]*", "\r\n<!-- C# Settings For Unity -->");
+            content = Regex.Replace(content, NewLine + AdditionalContentComment + ".*" + AdditionalContentComment, "", RegexOptions.Singleline);
+            content = Regex.Replace(content, "[\r\n]+</Project>[\r\n]*", NewLine + AdditionalContentComment);
             {
                 content += NewLine + "  <ItemGroup>";
                 {
@@ -55,7 +56,7 @@ namespace Coffee.CSharpCompilerSettings
 
                     // Add analyzer packages.
                     foreach (var package in setting.AnalyzerPackages)
-                        content = AddPackage(content, package.Name, package.Version);
+                        content = AddAnalyzer(content, package.PackageId);
                 }
                 content += NewLine + "  </ItemGroup>";
 
@@ -63,9 +64,9 @@ namespace Coffee.CSharpCompilerSettings
                 content += NewLine + "  <PropertyGroup>";
                 {
                     // Ruleset.
-                    var rulesets = new[] {"Assets/Default.ruleset"} // Add default rule set for project.
+                    var rulesets = new[] { "Assets/Default.ruleset" } // Add default rule set for project.
                         .Concat(string.IsNullOrEmpty(asmdefPath)
-                            ? new[] {"Assets/" + assemblyName + ".ruleset"} // Add rule set for predefined assemblies (e.g. Assembly-CSharp.dll).
+                            ? new[] { "Assets/" + assemblyName + ".ruleset" } // Add rule set for predefined assemblies (e.g. Assembly-CSharp.dll).
                             : Directory.GetFiles(Path.GetDirectoryName(asmdefPath), "*.ruleset")) // Add rule sets for asmdef.
                         .Where(File.Exists);
 
@@ -74,7 +75,7 @@ namespace Coffee.CSharpCompilerSettings
                 }
                 content += NewLine + "  </PropertyGroup>";
             }
-            content += NewLine + "<!-- C# Settings For Unity -->" + NewLine + NewLine + "</Project>" + NewLine;
+            content += NewLine + AdditionalContentComment + NewLine + "</Project>" + NewLine;
 
             return content;
         }
@@ -88,6 +89,14 @@ namespace Coffee.CSharpCompilerSettings
             return content;
         }
 
+        private static string AddAnalyzer(string content, string packageId)
+        {
+            var info = AnalyzerInfo.GetInstalledInfo(packageId);
+            foreach (var dll in info.DllFiles)
+                content += NewLine + "    <Analyzer Include=\"" + dll.Replace('/', '\\') + "\" />";
+            return content;
+        }
+
         private static string AddRuleSet(string content, string ruleset)
         {
             if (File.Exists(ruleset))
@@ -95,6 +104,7 @@ namespace Coffee.CSharpCompilerSettings
             return content;
         }
 
-        private static string NewLine = "\r\n";
+        private const string NewLine = "\r\n";
+        private const string AdditionalContentComment = "<!-- C# Settings For Unity -->";
     }
 }

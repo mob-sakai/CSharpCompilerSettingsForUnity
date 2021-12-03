@@ -144,7 +144,7 @@ namespace Coffee.CSharpCompilerSettings
             var spCompilerType = so.FindProperty("m_CompilerType");
             EditorGUILayout.PropertyField(spCompilerType);
 
-            bool isCustomPackage = spCompilerType.intValue == (int) CompilerType.CustomPackage;
+            bool isCustomPackage = spCompilerType.intValue == (int)CompilerType.CustomPackage;
             if (isCustomPackage)
             {
                 EditorGUI.indentLevel++;

@@ -43,7 +43,7 @@ namespace Coffee.CSharpCompilerSettings
         public static void RequestCompilation(string assemblyName = null)
         {
             var unityVersions = Application.unityVersion.Split('.');
-            if(2021 <= int.Parse(unityVersions[0]))
+            if (2021 <= int.Parse(unityVersions[0]))
             {
                 typeof(CompilationPipeline).Call("RequestScriptCompilation");
                 return;
