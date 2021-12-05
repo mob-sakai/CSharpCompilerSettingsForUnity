@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -106,5 +107,61 @@ namespace Coffee.CSharpCompilerSettings
 
         private const string NewLine = "\r\n";
         private const string AdditionalContentComment = "<!-- C# Settings For Unity -->";
+
+#if UNITY_2021_1_OR_NEWER
+        private static FileSystemWatcher _watcher;
+
+        private static void OnCSProjectCreated(string file)
+        {
+            if (string.IsNullOrEmpty(file) || Path.GetExtension(file) != ".csproj" || !File.Exists(file))
+                return;
+
+            // 
+            var codeEditor = Unity.CodeEditor.CodeEditor.Editor.CurrentCodeEditor;
+            if (codeEditor?.GetType().Name != "VSCodeScriptEditor")
+                return;
+
+            try
+            {
+                var text = File.ReadAllText(file, System.Text.Encoding.UTF8);
+                var beforeHash = text.GetHashCode();
+                text = OnGeneratedCSProject(file, text);
+                var afterHash = text.GetHashCode();
+                if (beforeHash != afterHash)
+                {
+                    Logger.LogInfo("<color=orange>Modify CSProject</color> {0}", Path.GetFileName(file));
+                    File.WriteAllText(file, text);
+                }
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogException(e);
+            }
+        }
+
+        [InitializeOnLoadMethod]
+        private static void WatchCSProject()
+        {
+#if !UNITY_EDITOR_WIN
+            Environment.SetEnvironmentVariable("MONO_MANAGED_WATCHER", "enabled");
+#endif
+            var resultDir = Path.GetFullPath(".");
+            foreach (var file in Directory.GetFiles(resultDir, "*.csproj"))
+                EditorApplication.delayCall += () => OnCSProjectCreated(Path.Combine(resultDir, file));
+
+            _watcher?.Dispose();
+            _watcher = new FileSystemWatcher()
+            {
+                Path = resultDir,
+                NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite,
+                IncludeSubdirectories = false,
+                EnableRaisingEvents = true,
+                Filter = "*.csproj",
+            };
+
+            _watcher.Created += (s, e) => EditorApplication.delayCall += () => OnCSProjectCreated(e.FullPath);
+            _watcher.Changed += (s, e) => EditorApplication.delayCall += () => OnCSProjectCreated(e.FullPath);
+        }
+#endif
     }
 }
