@@ -22,6 +22,11 @@
             "m_Name": "ErrorProne.NET.CoreAnalyzers",
             "m_Version": "0.1.2",
             "m_Category": 1
+        },
+        {
+            "m_Name": "UnitGenerator",
+            "m_Version": "1.2.1",
+            "m_Category": 1
         }
     ],
     "m_AnalyzerFilter": {
