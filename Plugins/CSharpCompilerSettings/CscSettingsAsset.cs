@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 using LVersion = Coffee.CSharpCompilerSettings.CSharpLanguageVersion;
+using System.Collections.Generic;
 
 namespace Coffee.CSharpCompilerSettings
 {
@@ -244,6 +245,30 @@ namespace Coffee.CSharpCompilerSettings
                 if (m.Success)
                 {
                     setting.m_CompilerFilter = JsonUtility.FromJson<AssemblyFilter>(m.Groups[1].Value);
+                }
+            }
+
+            if (!serializedJson.Contains("\"m_AnalyzerPackages\":"))
+            {
+                var m = Regex.Match(json, "\"m_AnalyzerPackages\":\\s*(\\[[^\\]]+\\])");
+                if (m.Success)
+                {
+                    var packages = new List<NugetPackage>();
+                    foreach (Match match in Regex.Matches(m.Groups[1].Value, "{[^}]+}"))
+                    {
+                        packages.Add(JsonUtility.FromJson<NugetPackage>(match.Value));
+                    }
+
+                    setting.m_AnalyzerPackages = packages.ToArray();
+                }
+            }
+
+            if (!serializedJson.Contains("\"m_AnalyzerFilter\":"))
+            {
+                var m = Regex.Match(json, "\"m_AnalyzerFilter\":\\s*({[^}]+})");
+                if (m.Success)
+                {
+                    setting.m_AnalyzerFilter = JsonUtility.FromJson<AssemblyFilter>(m.Groups[1].Value);
                 }
             }
 
