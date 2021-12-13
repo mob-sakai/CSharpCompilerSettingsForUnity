@@ -16,6 +16,10 @@ on:
     - cron: "0 0 * * 0" # weekly
   workflow_dispatch:
 
+env:
+  MINIMUM_UNITY_VERSION: 2018.3
+  EXCLUDE_UNITY_VERSION: "2018.3|2019.2"
+
 jobs:
   setup:
     runs-on: ubuntu-latest
@@ -23,7 +27,11 @@ jobs:
       versions: ${{ steps.setup.outputs.versions }}
     steps:
       - id: setup
-        run: echo "::set-output name=versions::`npx unity-changeset list --versions --all --latest-patch --min 2018.4 --json`"
+        run: |
+          VERSIONS=`npx unity-changeset list --versions --all --latest-patch --min ${{ env.MINIMUM_UNITY_VERSION }} --json \
+            | jq -c '[ .[] | select(test("${{ env.EXCLUDE_UNITY_VERSION }}")==false) ]'`
+
+          echo "::set-output name=versions::$VERSIONS"
 
   test:
     runs-on: ubuntu-latest
