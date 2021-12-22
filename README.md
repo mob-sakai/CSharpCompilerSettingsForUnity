@@ -50,11 +50,11 @@ However, unfortunately, [there are no plans to backport to Unity 2020.1 or earli
 
 <br>
 
-This package changes the C# compiler (csc) used on your Unity project, to support C# 8.0.  
-Let's enjoy C# 8.0 features with your Unity project!
+This package changes the C# compiler (csc) used on your Unity project, to support C# 8.0, C# 9.0 and more.  
+Let's enjoy new C# features with your Unity project!
 
-![](https://user-images.githubusercontent.com/12690315/97001486-62ec2e80-1573-11eb-9003-d40eb8ed8904.png)
-![](https://user-images.githubusercontent.com/12690315/97001169-e3f6f600-1572-11eb-8504-c528130c2234.png)
+![](https://user-images.githubusercontent.com/12690315/147154292-934d64f3-7cb4-43d5-8f43-3b9eab4431c6.png)
+![](https://user-images.githubusercontent.com/12690315/147154296-bf04b026-8270-4b8f-91ce-0b546fc764c3.png)
 
 ### Features
 
@@ -62,8 +62,8 @@ Let's enjoy C# 8.0 features with your Unity project!
   * This package is out of the box!
 * Change the C# compiler (csc) used on your Unity project.
   * Change the nuget package name.
-    * **[Microsoft.Net.Compilers][]: Official compiler (default, run on Unity built-in mono)**
-    * [Microsoft.Net.Compilers.Toolset][]: Official compiler (run on dotnet)
+    * **[Microsoft.Net.Compilers][]: Official compiler (default in legacy Unity, run on Unity built-in mono)**
+    * [Microsoft.Net.Compilers.Toolset][]: Official compiler (default in modern Uniity, run on dotnet)
       * Resolve the [issue #2](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/issues/2)
     * [OpenSesame.Net.Compilers][]: Allows access to internals/privates in other assemblies (run on Unity built-in mono)
     * [OpenSesame.Net.Compilers.Toolset][]: Allows access to internals/privates in other assemblies (run on dotnet)
@@ -75,16 +75,21 @@ Let's enjoy C# 8.0 features with your Unity project!
     * 3.6.0: C# 8.0 Supported.
     * 3.7.0: C# 8.0 Supported.
     * 3.8.0 (preview): C# 9.0 Supported.
+    * **3.9.0: C# 9.0 Supported. (default in Unity 2021.2.0)**
+    * 3.10.0: C# 9.0 Supported.
+    * 3.11.0: C# 9.0 Supported.
+    * 4.0.1: C# 10.0 Supported.
     * For other versions, see the nuget package page above.
   * Change the C# language version.
     * 7.0
     * 7.1
     * 7.2
     * 7.3
-    * **8.0 (latest, default in Unity 2020.2.0)**
-    * 9.0 (preview)
+    * **8.0 (default in Unity 2020.2.0)**
+    * **9.0 (default in Unity 2021.2.0)**
+    * 10.0 (latest)
 * Add the scripting define symbols based on language version on compiling.
-  * e.g. `CSHARP_7_3_OR_LATER`, `CSHARP_8_OR_LATER`, `CSHARP_9_OR_LATER`
+  * e.g. `CSHARP_7_3_OR_LATER`, `CSHARP_8_OR_LATER`, `CSHARP_9_OR_LATER` ...
 * Change the C# compiler settings for each `*.asmdef` file.
   * Portability: The assembly works even in the projects that do not have this package installed.
     * The best option when distributing as a package.
@@ -94,7 +99,7 @@ Let's enjoy C# 8.0 features with your Unity project!
     * The symbols starting with `'!'` will be removed.
     * e.g. `SYMBOL_TO_ADD;!SYMBOL_TO_REMOVE;...`
 * Modify `langversion` property in *.csproj file.
-* If `dotnet` is required, install it automatically.
+* If `dotnet` is required, it will be installed automatically.
 * `CompilerType.BuiltIn` compiler option to disable this plugin.
 * `Enable Logging` option to display compilation log.
 * `Nullable` option to enable [Nullable reference types (C# 8.0)](https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/nullable-reference-types).
@@ -106,7 +111,7 @@ Let's enjoy C# 8.0 features with your Unity project!
     * Variables of a reference type, string for example, are non-nullable. All nullability warnings are disabled.
   * `disable`: The nullable annotation context is disabled. The nullable warning context is disabled.
     * Variables of a reference type are oblivious, just like earlier versions of C#. All nullability warnings are disabled.
-* `Analyzer` option to analyze your code on compile.
+* `Analyzer/Source Generator Packages` option to analyze/generate your code on compile.
 
 [OpenSesame.Net.Compilers]: https://www.nuget.org/packages/OpenSesame.Net.Compilers
 [OpenSesame.Net.Compilers.Toolset]: https://www.nuget.org/packages/OpenSesame.Net.Compilers.Toolset
@@ -115,8 +120,6 @@ Let's enjoy C# 8.0 features with your Unity project!
 
 ### Feature plans
 
-* Add a dropdown menu to select version.
-* Verify the selected pakcage name and version.
 * Show package description.
 
 ### NOTE: Please do so at your own risk!
@@ -179,19 +182,6 @@ The selected nuget package will be used for compilation.
 
 The project setting asset for C# Compiler will be saved in `ProjectSettings/CSharpCompilerSettings.asset`.
 
-```json
-{
-    "m_UseDefaultCompiler": false,
-    "m_Version": 110,
-    "m_CompilerType": 1,
-    "m_PackageName": "Microsoft.Net.Compilers.Toolset",
-    "m_PackageVersion": "3.8.0-3.final",
-    "m_LanguageVersion": 2147483646,
-    "m_EnableLogging": true,
-    "m_ModifySymbols": ""
-}
-```
-
 <br><br>
 
 ### Configure C# compiler settings for `*.asmodef` file
@@ -235,7 +225,7 @@ Some features required external library.
 
 <br><br>
 
-### For C# 9.0 features (preview)
+### For C# 9.0 features
 
 [C# 9.0 features](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-9)  
 [samples](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/tree/sandbox/Assets/C%23%209.0%20Features)
@@ -243,14 +233,71 @@ Some features required external library.
 If you want to use the C# 9.0 features, set it up as follows:
 
 * Package Name: **Microsoft.Net.Compilers**
-* Package Version: **3.8.0-2.final** or later
-* Language Version: **preview**
+* Package Version: **3.9.0** or later
+* Language Version: **latest** or `CSharp_9`
 
 **NOTE:** Some features is not available. It requires `.Net 5`.
+
+<br><br>
+
+### For C# 10.0 features
+
+[C# 10.0 features](https://docs.microsoft.com/en-us/dotnet/csharp/whats-new/csharp-10)  
+[samples](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/tree/sandbox/Assets/C%23%2010.0%20Features)
+
+If you want to use the C# 10.0 features, set it up as follows:
+
+* Package Name: **Microsoft.Net.Compilers.Toolset**
+* Package Version: **4.0.1** or later
+* Language Version: **latest** or `CSharp_10`
+
+**NOTE:** Some features is not available. It requires `.Net 6`.
 
 <br><br><br><br>
 
 ## Development Notes
+
+### How to update CSharpCompilerSettings
+
+- See [installation](#installation) section to update package
+- Click `Project Settings > C# Compoler > Reload` to reload all `CSharpCompilerSettings_*.dll` assemblies 
+
+
+<br><br>
+
+### For Unity 2021.1 or later
+
+In Unity 2021.1 or later, the compile flow has changed significantly. (#11)
+The source code must pass both the built-in compiler and the custom compiler.
+Please use the `CUSTOM_COMPILE` directive as follows:
+
+```csharp
+using System;
+using NUnit.Framework;
+
+namespace IgnoreAccessibility
+{
+    public class IgnoreAccessibilityContent
+    {
+        private int privateNumber = 999;
+    }
+
+    public class IgnoreAccessibilityTest
+    {
+        [Test]
+        public void GetPrivateField()
+        {
+#if CUSTOM_COMPILE
+            Assert.AreEqual(new IgnoreAccessibilityContent().privateNumber, 999);
+#else
+            throw new NotImplementedException();
+#endif
+        }
+    }
+}
+```
+
+<br><br>
 
 ### How to include the asmdef in `Packages` directory
 
