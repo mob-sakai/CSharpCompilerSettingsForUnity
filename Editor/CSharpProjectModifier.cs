@@ -129,7 +129,7 @@ namespace Coffee.CSharpCompilerSettings
                 var afterHash = text.GetHashCode();
                 if (beforeHash != afterHash)
                 {
-                    Logger.LogInfo("<color=orange>Modify CSProject</color> {0}", Path.GetFileName(file));
+                    Logger.LogDebug("<color=orange>Modify CSProject</color> {0}", Path.GetFileName(file));
                     File.WriteAllText(file, text);
                 }
             }
