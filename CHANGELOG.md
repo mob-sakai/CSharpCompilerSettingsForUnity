@@ -1,3 +1,19 @@
+# [1.5.0](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/1.4.0...1.5.0) (2021-12-22)
+
+
+### Bug Fixes
+
+* In Unity 2020.2 or later, some fields will be not deserialized on first compilation (analyzer) ([0a8a7fb](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/0a8a7fbe3e66565a1510d06474b6bbeffaf579b1))
+* when using VS Code, C# project file is not modified in Unity 2021 or later ([dc97d57](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/dc97d57f17c07dfe1a1bf44f3073de2a10244ba8))
+
+
+### Features
+
+* add 'CUSTOM_COMPILE' symbol for custom compiler ([745ecd9](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/745ecd99b3081985ebf28230df4baf79271f48ae))
+* add custom compiler interface ([2e49e4c](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/2e49e4c1208fac8efa2a72069b78aee0966e3ee8))
+* support C# 10 (for *.Net.Compilers.Toolset v4.0.0 or later) ([fb5ac33](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/fb5ac33876681f5900e2118b014893ebff43b75c))
+* support Unity 2021.1 or later ([40f4d57](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/commit/40f4d570a3b14220cb2fb77a7897a1e9024d97e0))
+
 # [1.4.0](https://github.com/mob-sakai/CSharpCompilerSettingsForUnity/compare/1.3.0...1.4.0) (2021-01-06)
 
 
